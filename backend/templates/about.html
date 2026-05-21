@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}About — {{ branding.SITE_NAME }}{% endblock %}
+{% block description %}About {{ branding.SITE_NAME }} — free online calculators for everyday calculations.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 prose prose-slate">
+  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <span class="text-slate-700">About</span>
+  </nav>
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">About {{ branding.SITE_NAME }}</h1>
+
+  <p class="mt-4 text-slate-700">
+    {{ branding.SITE_NAME }} is a free collection of online calculators designed to help with everyday
+    math, finance, health, business, and engineering tasks. Every calculator is built around a
+    well-known formula, with the source and reasoning explained on each page.
+  </p>
+
+  <h2 class="mt-8 text-xl font-bold text-slate-900">What we build</h2>
+  <p class="mt-2 text-slate-700">
+    The site currently offers 72 calculators across eight categories — finance (mortgages, EMI,
+    investment growth, compound interest), health (BMI, BMR, TDEE, body fat), math (statistics,
+    quadratic equations, combinations), time and motion, physics, business, property, and sports.
+    Each calculator runs entirely on its own — pick the one you need, enter your numbers, and get
+    your result instantly.
+  </p>
+
+  <h2 class="mt-8 text-xl font-bold text-slate-900">How we built it</h2>
+  <p class="mt-2 text-slate-700">
+    Every calculator is implemented as a small, self-contained Python module with hand-checked
+    reference values and an automated test suite. All formulas are open and documented. We
+    don't track which inputs you enter — calculations happen on demand and are not stored.
+  </p>
+
+  <h2 class="mt-8 text-xl font-bold text-slate-900">What we deliberately don't build</h2>
+  <p class="mt-2 text-slate-700">
+    We don't provide tax calculators (income tax, sales tax, GST). Tax rules are
+    jurisdiction-specific, change every year, and the consequences of a wrong calculation
+    can be significant. For tax matters, please use the official calculator published by your
+    tax authority (the IRS in the US, the ATO in Australia, the Income Tax Department in India,
+    HMRC in the UK, and so on) or consult a qualified tax professional.
+  </p>
+
+  <h2 class="mt-8 text-xl font-bold text-slate-900">A note on accuracy</h2>
+  <p class="mt-2 text-slate-700">
+    Calculators on this site give the right answer for the inputs you provide, using the formulas
+    documented on each page. That said, results are estimates only and should not be taken as
+    financial, medical, legal, or tax advice. For decisions with significant financial or health
+    implications, please consult a qualified professional.
+  </p>
+
+  <h2 class="mt-8 text-xl font-bold text-slate-900">Contact</h2>
+  <p class="mt-2 text-slate-700">
+    Questions, suggestions for new calculators, or bug reports? Get in touch via the
+    <a href="/contact" class="text-brand-700 hover:underline">contact page</a>.
+  </p>
+</div>
+{% endblock %}

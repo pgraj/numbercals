@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.name }} — {{ branding.SITE_NAME }}{% endblock %}
+{% block description %}{{ meta.description }}{% endblock %}
+{% block og_title %}{{ meta.name }}{% endblock %}
+{% block og_description %}{{ meta.description }}{% endblock %}
+
+{% block head_extra %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": {{ meta.name|tojson }},
+      "description": {{ meta.description|tojson }},
+      "url": "{{ branding.SITE_URL }}/calculator/{{ meta.slug }}",
+      "datePublished": "2026-01-01",
+      "dateModified": "2026-05-20",
+      "inLanguage": "en",
+      "author": {"@type": "Organization", "name": {{ branding.SITE_NAME|tojson }}, "url": "{{ branding.SITE_URL }}/"},
+      "publisher": {"@id": "{{ branding.SITE_URL }}/#organization"},
+      "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ branding.SITE_URL }}/calculator/{{ meta.slug }}"}
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ branding.SITE_URL }}/"},
+        {"@type": "ListItem", "position": 2, "name": {{ meta.category|capitalize|tojson }}, "item": "{{ branding.SITE_URL }}/category/{{ meta.category }}"},
+        {"@type": "ListItem", "position": 3, "name": {{ meta.name|tojson }}, "item": "{{ branding.SITE_URL }}/calculator/{{ meta.slug }}"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {% for item in meta.faq %}
+        {
+          "@type": "Question",
+          "name": {{ item.q|tojson }},
+          "acceptedAnswer": {"@type": "Answer", "text": {{ item.a|tojson }}}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <a href="/category/{{ meta.category }}" class="hover:text-brand-700 capitalize">{{ meta.category }}</a>
+    <span>/</span>
+    <span class="text-slate-700">{{ meta.name }}</span>
+  </nav>
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">{{ meta.name }}</h1>
+  <p class="mt-2 text-slate-600">{{ meta.description }}</p>
+
+  <!-- About / How it works (SEO content depth) -->
+  <section class="mt-6 bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+    <h2 class="text-lg font-bold text-slate-900">About this calculator</h2>
+    <p class="mt-2 text-slate-700">
+      The <strong>{{ meta.name }}</strong> on {{ branding.SITE_NAME }} is a free, mobile-friendly tool for
+      anyone needing to {{ meta.description|lower|trim('.') }}. Enter your values in the form below
+      and the result is computed instantly &mdash; no sign-up, no installation, no waiting.
+    </p>
+    <h3 class="mt-4 text-base font-semibold text-slate-900">Formula used</h3>
+    <p class="mt-1 font-mono text-sm sm:text-base text-slate-800 bg-slate-50 border border-slate-200 rounded p-2">{{ meta.formula }}</p>
+
+    {% if meta.fields %}
+    <h3 class="mt-4 text-base font-semibold text-slate-900">What you'll need</h3>
+    <ul class="mt-1 list-disc list-inside text-slate-700 space-y-1 text-sm">
+      {% for f in meta.fields %}
+        <li><strong>{{ f.label }}</strong>{% if f.placeholder %} (e.g. {{ f.placeholder }}){% endif %}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if meta.outputs %}
+    <h3 class="mt-4 text-base font-semibold text-slate-900">What you'll get</h3>
+    <ul class="mt-1 list-disc list-inside text-slate-700 space-y-1 text-sm">
+      {% for o in meta.outputs %}
+        <li>{{ o.label }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <!-- Calculator card -->
+  <section class="mt-6 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50">
+      <div class="text-xs uppercase tracking-wider text-slate-500">Formula</div>
+      <div class="font-mono text-sm sm:text-base text-slate-800 mt-0.5 break-words">{{ meta.formula }}</div>
+    </div>
+
+    <form id="calc-form" class="p-4 sm:p-6 space-y-4" novalidate>
+      {% for field in meta.fields %}
+        <div>
+          <label for="f-{{ field.name }}" class="block text-sm font-medium text-slate-800">
+            {{ field.label }}{% if field.required %} <span class="text-rose-600">*</span>{% endif %}
+          </label>
+
+          {% if field.type == 'select' %}
+            <select id="f-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+              {% for opt in field.options %}
+                <option value="{{ opt.value }}" {% if field.default is defined and opt.value == field.default %}selected{% endif %}>{{ opt.label }}</option>
+              {% endfor %}
+            </select>
+
+          {% elif field.type == 'date' %}
+            <input type="date" id="f-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+
+          {% elif field.type == 'time' %}
+            <input type="time" id="f-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+              placeholder="{{ field.placeholder|default('') }}"
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+
+          {% elif field.type == 'datetime-local' %}
+            <input type="datetime-local" id="f-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+
+          {% elif field.type == 'text' %}
+            <input type="text" id="f-{{ field.name }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+              placeholder="{{ field.placeholder|default('') }}"
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+
+          {% else %}
+            <input type="number" inputmode="decimal" step="any" id="f-{{ field.name }}" name="{{ field.name }}"
+              {% if field.required %}required{% endif %}
+              {% if field.min is defined %}min="{{ field.min }}"{% endif %}
+              placeholder="{{ field.placeholder|default('') }}"
+              class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm num focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="flex flex-col sm:flex-row gap-2 pt-2">
+        <button type="submit" class="inline-flex justify-center items-center px-5 py-3 sm:py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-base sm:text-sm transition">
+          Calculate
+        </button>
+        <button type="reset" class="inline-flex justify-center items-center px-5 py-3 sm:py-2.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-medium text-base sm:text-sm transition">
+          Reset
+        </button>
+      </div>
+    </form>
+
+    <!-- Error & Result -->
+    <div id="calc-error" class="hidden mx-4 sm:mx-6 mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-800"></div>
+    <div id="calc-result" class="hidden border-t border-slate-200 bg-gradient-to-b from-brand-50/50 to-white px-4 sm:px-6 py-5">
+      <div class="text-xs uppercase tracking-wider text-brand-700 font-semibold">Result</div>
+      <div id="calc-output" class="mt-2 space-y-2"></div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  {% if meta.faq %}
+  <section class="mt-8">
+    <h2 class="text-xl font-bold text-slate-900">Frequently Asked Questions</h2>
+    <div class="mt-3 divide-y divide-slate-200 bg-white rounded-xl border border-slate-200">
+      {% for item in meta.faq %}
+        <details class="group p-4 sm:p-5">
+          <summary class="cursor-pointer font-semibold text-slate-900 flex justify-between items-center gap-3">
+            <span>{{ item.q }}</span>
+            <span class="text-brand-600 group-open:rotate-45 transition">+</span>
+          </summary>
+          <p class="mt-2 text-slate-700 text-sm sm:text-base">{{ item.a }}</p>
+        </details>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Related calculators -->
+  {% if related %}
+  <section class="mt-8">
+    <h2 class="text-xl font-bold text-slate-900">Related Calculators</h2>
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {% for r in related %}
+        <a href="/calculator/{{ r.slug }}" class="block bg-white rounded-lg border border-slate-200 p-4 hover:border-brand-500 hover:shadow-sm transition">
+          <div class="font-semibold text-slate-900">{{ r.name }}</div>
+          <div class="mt-1 text-sm text-slate-600 line-clamp-2">{{ r.description }}</div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+<!-- Embed META as JSON so the JS can read output config (labels, formats) -->
+<script id="calc-meta" type="application/json">{{ meta|tojson }}</script>
+
+<script>
+(function () {
+  const meta = JSON.parse(document.getElementById('calc-meta').textContent);
+  const form = document.getElementById('calc-form');
+  const errBox = document.getElementById('calc-error');
+  const resBox = document.getElementById('calc-result');
+  const outBox = document.getElementById('calc-output');
+
+  function showError(msg) {
+    errBox.textContent = msg;
+    errBox.classList.remove('hidden');
+    resBox.classList.add('hidden');
+  }
+  function hideError() { errBox.classList.add('hidden'); }
+
+  function fmtCurrency(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return String(n);
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function fmtPercent(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return String(n);
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + '%';
+  }
+  function fmtNumber(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return String(n);
+    return n.toLocaleString(undefined, { maximumFractionDigits: 6 });
+  }
+
+  function formatValue(value, format) {
+    if (value === null || value === undefined) return '—';
+    if (Array.isArray(value)) return renderTable(value);
+    if (format === 'currency') return fmtCurrency(value);
+    if (format === 'percent') return fmtPercent(value);
+    if (format === 'number') return fmtNumber(value);
+    return String(value);
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return '<div class="text-slate-500">No data.</div>';
+    const cols = Object.keys(rows[0]);
+    let html = '<div class="overflow-x-auto"><table class="w-full text-sm border border-slate-200 rounded-lg"><thead class="bg-slate-50"><tr>';
+    for (const c of cols) html += `<th class="px-3 py-2 text-left font-semibold text-slate-700 capitalize">${c.replace(/_/g,' ')}</th>`;
+    html += '</tr></thead><tbody>';
+    for (const r of rows) {
+      html += '<tr class="border-t border-slate-200">';
+      for (const c of cols) {
+        const v = r[c];
+        const txt = typeof v === 'number' ? fmtNumber(v) : (v == null ? '' : String(v));
+        html += `<td class="px-3 py-2 num">${txt}</td>`;
+      }
+      html += '</tr>';
+    }
+    return html + '</tbody></table></div>';
+  }
+
+  function renderResult(result) {
+    const outputs = meta.outputs || [];
+    let html = '';
+    // Render in the order defined by META.outputs
+    const seen = new Set();
+    for (const o of outputs) {
+      if (!(o.key in result)) continue;
+      seen.add(o.key);
+      const val = result[o.key];
+      const fmt = o.format || 'number';
+      const isTable = fmt === 'table' || Array.isArray(val);
+      if (isTable) {
+        html += `<div><div class="text-sm font-medium text-slate-600 mb-1">${o.label}</div>${renderTable(val)}</div>`;
+      } else {
+        html += `
+          <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 py-1 border-b border-slate-100 last:border-0">
+            <div class="text-sm text-slate-600">${o.label}</div>
+            <div class="text-lg sm:text-xl font-semibold text-slate-900 num">${formatValue(val, fmt)}</div>
+          </div>`;
+      }
+    }
+    // Catch-all for any extra keys not declared in outputs
+    for (const k of Object.keys(result)) {
+      if (seen.has(k)) continue;
+      const val = result[k];
+      const label = k.replace(/_/g, ' ');
+      html += `
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 py-1 border-b border-slate-100 last:border-0">
+          <div class="text-sm text-slate-600 capitalize">${label}</div>
+          <div class="text-lg font-semibold text-slate-900 num">${formatValue(val, 'number')}</div>
+        </div>`;
+    }
+    outBox.innerHTML = html || '<div class="text-slate-500">No result.</div>';
+    resBox.classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    // Collect inputs — preserve raw strings; backend coerces.
+    const data = {};
+    const fd = new FormData(form);
+    for (const [k, v] of fd.entries()) {
+      data[k] = v;
+    }
+
+    try {
+      const res = await fetch(`/api/calculate/${meta.slug}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        showError(body.detail || 'Calculation failed.');
+        return;
+      }
+      renderResult(body.result || {});
+      // Scroll result into view on mobile
+      if (window.innerWidth < 640) {
+        resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } catch (err) {
+      showError('Network error: ' + err.message);
+    }
+  });
+
+  form.addEventListener('reset', () => {
+    hideError();
+    resBox.classList.add('hidden');
+  });
+})();
+</script>
+{% endblock %}

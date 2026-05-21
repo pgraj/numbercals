@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} Calculators — {{ branding.SITE_NAME }}{% endblock %}
+{% block description %}Free {{ category.name|lower }} calculators. Browse {{ items|length }} tools, all mobile-friendly.{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <span class="text-slate-700">{{ category.name }}</span>
+  </nav>
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">{{ category.name }} Calculators</h1>
+  <p class="mt-2 text-slate-600">{{ items|length }} free tools — pick one to get started.</p>
+
+  <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    {% for item in items %}
+      <a href="/calculator/{{ item.slug }}" class="group block bg-white rounded-lg border border-slate-200 p-4 hover:border-brand-500 hover:shadow-sm transition">
+        <div class="font-semibold text-slate-900 group-hover:text-brand-700">{{ item.name }}</div>
+        <div class="mt-1 text-sm text-slate-600 line-clamp-2">{{ item.description }}</div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

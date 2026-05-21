@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ branding.SITE_NAME }} — {{ total }} Free Online Calculators{% endblock %}
+{% block description %}Browse {{ total }} free online calculators across finance, health, math, physics, time, and business. Mobile-friendly. No sign-up.{% endblock %}
+{% block og_title %}{{ branding.SITE_NAME }} — Free Calculators for Everything{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+      {{ total }} free calculators, one site.
+    </h1>
+    <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+      Finance, health, math, physics, and business — fast, mobile-friendly, no sign-up.
+    </p>
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
+      {% for cat in categories %}
+        <a href="/category/{{ cat.slug }}" class="px-4 py-2 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-brand-500 hover:text-brand-700 transition">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Grouped calculators -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+  {% for group in grouped %}
+    <section id="{{ group.category.slug }}">
+      <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900">{{ group.category.name }}</h2>
+        <a href="/category/{{ group.category.slug }}" class="text-sm font-medium text-brand-700 hover:text-brand-900">View all →</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for item in group.entries %}
+          <a href="/calculator/{{ item.slug }}" class="group block bg-white rounded-lg border border-slate-200 p-4 hover:border-brand-500 hover:shadow-sm transition">
+            <div class="font-semibold text-slate-900 group-hover:text-brand-700">{{ item.name }}</div>
+            <div class="mt-1 text-sm text-slate-600 line-clamp-2">{{ item.description }}</div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}

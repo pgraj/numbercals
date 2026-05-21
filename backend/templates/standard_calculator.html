@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Standard Calculator — {{ branding.SITE_NAME }}{% endblock %}
+{% block description %}A simple, mobile-friendly online standard calculator. Add, subtract, multiply, divide. No sign-up.{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-6 sm:py-10">
+  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <span class="text-slate-700">Standard Calculator</span>
+  </nav>
+
+  <h1 class="text-2xl font-bold text-slate-900">Standard Calculator</h1>
+  <p class="mt-1 text-sm text-slate-600">Basic arithmetic, instantly.</p>
+
+  <section class="mt-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <!-- Display -->
+    <div class="px-4 sm:px-5 py-5 bg-slate-900 text-white">
+      <div id="hist" class="text-right text-sm text-slate-400 min-h-[1.25rem] num truncate"></div>
+      <div id="disp" class="text-right text-3xl sm:text-4xl font-semibold num break-words" data-val="0">0</div>
+    </div>
+
+    <!-- Keypad -->
+    <div class="p-3 sm:p-4 grid grid-cols-4 gap-2 text-base sm:text-lg select-none">
+      <!-- Row 1 -->
+      <button data-action="clear"    class="col-span-2 h-14 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold">AC</button>
+      <button data-action="back"     class="h-14 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold">⌫</button>
+      <button data-op="/"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">÷</button>
+      <!-- Row 2 -->
+      <button data-num="7"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">7</button>
+      <button data-num="8"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">8</button>
+      <button data-num="9"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">9</button>
+      <button data-op="*"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">×</button>
+      <!-- Row 3 -->
+      <button data-num="4"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">4</button>
+      <button data-num="5"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">5</button>
+      <button data-num="6"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">6</button>
+      <button data-op="-"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">−</button>
+      <!-- Row 4 -->
+      <button data-num="1"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">1</button>
+      <button data-num="2"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">2</button>
+      <button data-num="3"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">3</button>
+      <button data-op="+"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">+</button>
+      <!-- Row 5 -->
+      <button data-num="0"           class="col-span-2 h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">0</button>
+      <button data-action="dot"      class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">.</button>
+      <button data-action="equals"   class="h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">=</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const disp = document.getElementById('disp');
+  const hist = document.getElementById('hist');
+
+  let current = '0';     // displayed value
+  let stored = null;     // operand on the left
+  let pending = null;    // pending op
+  let justEvaluated = false;
+
+  function fmt(n) {
+    if (!isFinite(n)) return 'Error';
+    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 12 });
+  }
+  function render() { disp.textContent = current; }
+  function setCurrentFromNumber(n) { current = String(+n.toFixed(12)).replace(/\.?0+$/, ''); }
+
+  function inputDigit(d) {
+    if (justEvaluated) { current = '0'; justEvaluated = false; }
+    if (current === '0') current = d;
+    else current += d;
+    render();
+  }
+  function inputDot() {
+    if (justEvaluated) { current = '0'; justEvaluated = false; }
+    if (!current.includes('.')) { current += '.'; render(); }
+  }
+  function clearAll() { current = '0'; stored = null; pending = null; hist.textContent = ''; justEvaluated = false; render(); }
+  function backspace() {
+    if (justEvaluated) return;
+    current = current.length > 1 ? current.slice(0, -1) : '0';
+    render();
+  }
+  function applyOp(a, b, op) {
+    a = parseFloat(a); b = parseFloat(b);
+    if (op === '+') return a + b;
+    if (op === '-') return a - b;
+    if (op === '*') return a * b;
+    if (op === '/') return b === 0 ? NaN : a / b;
+    return b;
+  }
+  function setOp(op) {
+    if (stored === null) {
+      stored = parseFloat(current);
+    } else if (pending && !justEvaluated) {
+      const res = applyOp(stored, current, pending);
+      stored = res;
+      setCurrentFromNumber(res);
+    }
+    pending = op;
+    const sym = {'+':'+','-':'−','*':'×','/':'÷'}[op];
+    hist.textContent = `${fmt(stored)} ${sym}`;
+    justEvaluated = false;
+    current = current === '' ? '0' : current;
+    render();
+    // After op, next digit should replace current
+    justEvaluated = true;
+  }
+  function equals() {
+    if (pending === null || stored === null) return;
+    const res = applyOp(stored, current, pending);
+    hist.textContent = `${fmt(stored)} ${ {'+':'+','-':'−','*':'×','/':'÷'}[pending] } ${fmt(parseFloat(current))} =`;
+    setCurrentFromNumber(res);
+    stored = null;
+    pending = null;
+    justEvaluated = true;
+    render();
+  }
+
+  document.querySelectorAll('button[data-num]').forEach(b =>
+    b.addEventListener('click', () => inputDigit(b.dataset.num))
+  );
+  document.querySelectorAll('button[data-op]').forEach(b =>
+    b.addEventListener('click', () => setOp(b.dataset.op))
+  );
+  document.querySelector('button[data-action="dot"]').addEventListener('click', inputDot);
+  document.querySelector('button[data-action="clear"]').addEventListener('click', clearAll);
+  document.querySelector('button[data-action="back"]').addEventListener('click', backspace);
+  document.querySelector('button[data-action="equals"]').addEventListener('click', equals);
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') inputDigit(e.key);
+    else if (e.key === '.') inputDot();
+    else if (['+','-','*','/'].includes(e.key)) setOp(e.key);
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); equals(); }
+    else if (e.key === 'Backspace') backspace();
+    else if (e.key === 'Escape') clearAll();
+  });
+
+  render();
+})();
+</script>
+{% endblock %}

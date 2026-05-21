@@ -1,0 +1,31 @@
+# Render Blueprint for NumberCals
+# Deploys the FastAPI app on Render's managed platform.
+# https://render.com/docs/blueprint-spec
+#
+# COST:
+#   plan: free      - $0/month, sleeps after 15 min idle (~60s cold start)
+#                     Start here. Good for launch + low-traffic period.
+#   plan: standard  - $25/month, no sleep, always warm. Upgrade once you have
+#                     consistent daily traffic.
+#
+# To deploy:
+#   1. Push this repo to GitHub
+#   2. On Render: New > Blueprint > connect your GitHub repo
+#   3. Render reads this file and provisions the service
+#   4. Add your custom domain (numbercals.com) in the Render dashboard
+#   5. Update DNS at Cloudflare to point to Render's target
+
+services:
+  - type: web
+    name: numbercals
+    runtime: python
+    region: singapore         # Closest to Sydney; also try: oregon, frankfurt
+    plan: free                # $0/mo. Change to 'standard' when ready.
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -k uvicorn.workers.UvicornWorker -w 1 -b 0.0.0.0:$PORT main:app
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"

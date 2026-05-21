@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Use — {{ branding.SITE_NAME }}{% endblock %}
+{% block description %}Terms of use for {{ branding.SITE_NAME }}.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <span class="text-slate-700">Terms of Use</span>
+  </nav>
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Terms of Use</h1>
+  <p class="mt-2 text-sm text-slate-500">Last updated: May 2026</p>
+
+  <div class="mt-6 space-y-6 text-slate-700">
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Acceptance of terms</h2>
+      <p class="mt-2">
+        By using {{ branding.SITE_NAME }} ({{ branding.SITE_URL }}), you agree to these terms. If
+        you don't agree, please don't use the site. We may update these terms from time to time;
+        continued use after a change constitutes acceptance of the updated terms.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">No professional advice</h2>
+      <p class="mt-2">
+        The calculators and content on this site are for general informational and educational
+        purposes only. They are not financial advice, medical advice, legal advice, tax advice,
+        or any other kind of professional advice.
+      </p>
+      <p class="mt-2">
+        Specifically:
+      </p>
+      <ul class="mt-2 list-disc list-inside space-y-1">
+        <li><strong>Finance:</strong> Investment, mortgage, loan, and other finance calculators
+            give estimates based on the inputs you provide. They do not account for fees, taxes,
+            local regulations, or your personal circumstances. Consult a licensed financial
+            advisor before making decisions involving real money.</li>
+        <li><strong>Health:</strong> BMI, calorie, and other health calculators give
+            population-average estimates. They are not diagnostic tools. Consult a doctor or
+            qualified health professional for advice specific to you.</li>
+        <li><strong>Tax:</strong> We do not provide tax calculators. Use the official tools
+            published by your tax authority, or consult a tax professional.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">No warranty</h2>
+      <p class="mt-2">
+        The site is provided "as is" and "as available," without warranty of any kind, express or
+        implied. While we take care to ensure formulas are correctly implemented and outputs are
+        accurate for the inputs provided, we make no guarantees about the accuracy,
+        completeness, reliability, or fitness for any particular purpose of any calculator or
+        any other content on the site.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Limitation of liability</h2>
+      <p class="mt-2">
+        To the maximum extent permitted by law, {{ branding.SITE_NAME }} and its operators are
+        not liable for any direct, indirect, incidental, consequential, special, or punitive
+        damages arising out of or related to your use of (or inability to use) the site,
+        including but not limited to financial losses, missed opportunities, or decisions made
+        in reliance on calculator output.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Acceptable use</h2>
+      <p class="mt-2">You agree not to:</p>
+      <ul class="mt-2 list-disc list-inside space-y-1">
+        <li>Use the site for unlawful purposes</li>
+        <li>Attempt to gain unauthorised access to any part of the site or its infrastructure</li>
+        <li>Interfere with or disrupt the site's operation (e.g. denial-of-service attacks,
+            excessive automated scraping)</li>
+        <li>Reverse-engineer, decompile, or attempt to extract the source code of the
+            non-public parts of the site</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Intellectual property</h2>
+      <p class="mt-2">
+        The site's design, text, graphics, and code are protected by copyright. You may use
+        calculator output for personal, non-commercial purposes. For other uses (republishing
+        content, embedding the site in commercial products, etc.), please contact us.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Third-party links and content</h2>
+      <p class="mt-2">
+        The site may contain links to third-party websites and may display advertisements served
+        by third-party networks. We do not endorse, and are not responsible for, the content,
+        accuracy, or practices of any third-party site. Use them at your own discretion.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Governing law</h2>
+      <p class="mt-2">
+        These terms are governed by the laws of Australia. Any disputes will be resolved in the
+        courts of New South Wales, Australia.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-bold text-slate-900">Contact</h2>
+      <p class="mt-2">
+        Questions about these terms: <a href="mailto:{{ branding.SITE_CONTACT_EMAIL }}" class="text-brand-700 hover:underline">{{ branding.SITE_CONTACT_EMAIL }}</a>.
+      </p>
+    </section>
+
+    <section class="text-sm text-slate-500 border-t border-slate-200 pt-4 mt-8">
+      <p>
+        <strong>Note:</strong> This is a general terms-of-use template. For high-traffic
+        commercial use, we recommend having a lawyer review and tailor it to your jurisdiction
+        and business model.
+      </p>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon-180.png">
+
+  <title>{% block title %}{{ branding.SITE_NAME }} — Free Online Calculators{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ branding.SITE_TAGLINE }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{{ branding.SITE_URL }}{{ request.url.path }}{% endblock %}">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ branding.SITE_NAME }}">
+  <meta property="og:title" content="{% block og_title %}{{ branding.SITE_NAME }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ branding.SITE_TAGLINE }}{% endblock %}">
+  <meta property="og:url" content="{{ branding.SITE_URL }}{{ request.url.path }}">
+  <meta property="og:image" content="{{ branding.SITE_OG_IMAGE }}">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.og_title() }}">
+  <meta name="twitter:description" content="{{ self.og_description() }}">
+
+  <!-- Structured data: Organization + WebSite (every page) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "{{ branding.SITE_URL }}/#website",
+        "url": "{{ branding.SITE_URL }}/",
+        "name": "{{ branding.SITE_NAME }}",
+        "description": "{{ branding.SITE_TAGLINE }}",
+        "inLanguage": "en",
+        "publisher": { "@id": "{{ branding.SITE_URL }}/#organization" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "{{ branding.SITE_URL }}/#organization",
+        "name": "{{ branding.SITE_NAME }}",
+        "url": "{{ branding.SITE_URL }}/",
+        "logo": "{{ branding.SITE_URL }}/static/og.png"
+      }
+    ]
+  }
+  </script>
+
+  <!-- Tailwind via CDN — swap to a built bundle for production -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+    .num { font-variant-numeric: tabular-nums; }
+  </style>
+
+  {# Google Analytics — only renders if a GA ID is set in branding.py #}
+  {% if branding.GOOGLE_ANALYTICS_ID %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ branding.GOOGLE_ANALYTICS_ID }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ branding.GOOGLE_ANALYTICS_ID }}');
+  </script>
+  {% endif %}
+
+  {# Google AdSense — only renders if publisher ID is set #}
+  {% if branding.ADSENSE_PUBLISHER_ID %}
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ branding.ADSENSE_PUBLISHER_ID }}" crossorigin="anonymous"></script>
+  {% endif %}
+
+  {# Ezoic — only renders if site ID is set #}
+  {% if branding.EZOIC_SITE_ID %}
+  <script src="//www.ezojs.com/ezoic/sa.min.js"></script>
+  <script>
+    window.ezstandalone = window.ezstandalone || {};
+    ezstandalone.cmd = ezstandalone.cmd || [];
+  </script>
+  {% endif %}
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 font-bold text-lg text-brand-700">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-600 text-white text-sm">∑</span>
+        <span>{{ branding.SITE_NAME }}</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-1 text-sm">
+        {% for cat in categories %}
+          <a href="/category/{{ cat.slug }}" class="px-3 py-2 rounded-md text-slate-700 hover:text-brand-700 hover:bg-brand-50">{{ cat.name }}</a>
+        {% endfor %}
+        <a href="/tools/standard-calculator" class="px-3 py-2 rounded-md text-slate-700 hover:text-brand-700 hover:bg-brand-50">Standard</a>
+        <a href="/tools/scientific-calculator" class="px-3 py-2 rounded-md text-slate-700 hover:text-brand-700 hover:bg-brand-50">Scientific</a>
+      </nav>
+
+      <!-- Mobile menu button -->
+      <button id="menu-btn" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md text-slate-700 hover:bg-slate-100" aria-label="Open menu" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Mobile nav drawer -->
+    <nav id="mobile-nav" class="md:hidden hidden border-t border-slate-200 bg-white">
+      <div class="max-w-6xl mx-auto px-4 py-2 flex flex-col">
+        {% for cat in categories %}
+          <a href="/category/{{ cat.slug }}" class="px-3 py-3 rounded-md text-slate-800 hover:bg-brand-50">{{ cat.name }}</a>
+        {% endfor %}
+        <a href="/tools/standard-calculator" class="px-3 py-3 rounded-md text-slate-800 hover:bg-brand-50">Standard Calculator</a>
+        <a href="/tools/scientific-calculator" class="px-3 py-3 rounded-md text-slate-800 hover:bg-brand-50">Scientific Calculator</a>
+      </div>
+    </nav>
+  </header>
+
+  {# Ad slot — top, below header — only renders if AdSense is configured #}
+  {% if branding.ADSENSE_PUBLISHER_ID %}
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="{{ branding.ADSENSE_PUBLISHER_ID }}"
+         data-ad-slot="HEADER_AD_SLOT_ID"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  {% endif %}
+
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  {# Ad slot — bottom, above footer — only renders if AdSense is configured #}
+  {% if branding.ADSENSE_PUBLISHER_ID %}
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="{{ branding.ADSENSE_PUBLISHER_ID }}"
+         data-ad-slot="FOOTER_AD_SLOT_ID"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  {% endif %}
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-200 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-sm text-slate-600">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {% for cat in categories %}
+          <div>
+            <div class="font-semibold text-slate-900 mb-2">{{ cat.name }}</div>
+            <a href="/category/{{ cat.slug }}" class="block py-0.5 hover:text-brand-700">All {{ cat.name }} →</a>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-200 flex flex-wrap gap-4 text-sm">
+        <a href="/about" class="hover:text-brand-700">About</a>
+        <a href="/contact" class="hover:text-brand-700">Contact</a>
+        <a href="/privacy" class="hover:text-brand-700">Privacy Policy</a>
+        <a href="/terms" class="hover:text-brand-700">Terms of Use</a>
+      </div>
+
+      <div class="mt-6 pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between gap-3">
+        <div>© {{ branding.SITE_NAME }}. All calculators are free to use.</div>
+        <div class="text-slate-500 max-w-2xl">{{ branding.DISCLAIMER_GENERAL }}</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const mb = document.getElementById('menu-btn');
+    const mn = document.getElementById('mobile-nav');
+    if (mb && mn) {
+      mb.addEventListener('click', () => {
+        const open = mn.classList.toggle('hidden') === false;
+        mb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+  </script>
+  {% block body_extra %}{% endblock %}
+</body>
+</html>
