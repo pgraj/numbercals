@@ -34,4 +34,4 @@ DISCLAIMER_GENERAL = (
 # when the corresponding publisher ID is not set.
 ADSENSE_PUBLISHER_ID = ""   # e.g. "ca-pub-XXXXXXXXXXXXXXXX"
 EZOIC_SITE_ID = ""          # numeric Ezoic site id
-GOOGLE_ANALYTICS_ID = ""    # e.g. "G-XXXXXXXXXX"
+GOOGLE_ANALYTICS_ID = "G-61RGVM24YH"    # e.g. "G-XXXXXXXXXX"
