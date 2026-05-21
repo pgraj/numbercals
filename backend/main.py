@@ -22,7 +22,7 @@ from typing import Any, Dict
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -184,13 +184,13 @@ def page_terms(request: Request) -> HTMLResponse:
 
 
 @app.get("/robots.txt")
-def robots() -> JSONResponse:
+def robots() -> Response:
     body = f"User-agent: *\nAllow: /\nSitemap: {branding.SITE_URL}/sitemap.xml\n"
-    return JSONResponse(content=body, media_type="text/plain")
+    return Response(content=body, media_type="text/plain")
 
 
 @app.get("/sitemap.xml")
-def sitemap() -> JSONResponse:
+def sitemap() -> Response:
     """XML sitemap built from registry + branding.SITE_URL, with lastmod dates."""
     from datetime import date
     today = date.today().isoformat()
@@ -223,7 +223,7 @@ def sitemap() -> JSONResponse:
         body += f"    <priority>{priority}</priority>\n"
         body += "  </url>\n"
     body += "</urlset>\n"
-    return JSONResponse(content=body, media_type="application/xml")
+    return Response(content=body, media_type="application/xml")
 
 
 @app.get("/healthz")
