@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Full Disclaimer | NumberCals{% endblock %}
+
+{% block content %}
+<div class="nc-disc-wrap">
+
+  {# ===== HEADER ===== #}
+  <header class="nc-disc-header">
+    <div class="nc-disc-badge">⚠️ Legal</div>
+    <h1>Full Disclaimer &amp; Terms of Use</h1>
+    <p class="nc-disc-sub">
+      Please read carefully before using any tool on NumberCals.com.
+    </p>
+    <p class="nc-disc-meta">Last updated: 2026</p>
+  </header>
+
+  <div class="nc-disc-layout">
+
+    {# ===== TABLE OF CONTENTS (sticky on desktop) ===== #}
+    <nav class="nc-disc-toc" aria-label="On this page">
+      <p class="nc-disc-toc-title">On this page</p>
+      <ol>
+        <li><a href="#nature">Nature of this site</a></li>
+        <li><a href="#limitations">Algorithmic limitations</a></li>
+        <li><a href="#verification">Expert verification required</a></li>
+        <li><a href="#liability">No liability</a></li>
+        <li><a href="#responsibility">Your responsibility</a></li>
+        <li><a href="#changes">Changes</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    {# ===== BODY ===== #}
+    <article class="nc-disc-body">
+
+      <section id="nature">
+        <h2>1. Nature of this site</h2>
+        <p>
+          NumberCals.com publishes calculators and engineering, scientific,
+          medical, and financial tools intended <strong>strictly for
+          educational, experimental, and research purposes</strong>. The
+          tools are provided free of charge and on an
+          <strong>"as is"</strong> basis without warranty of any kind,
+          express or implied, including (but not limited to) accuracy,
+          completeness, fitness for a particular purpose, non-infringement,
+          or reliability.
+        </p>
+      </section>
+
+      <section id="limitations">
+        <h2>2. Algorithmic limitations</h2>
+        <p>
+          Every tool on this site runs algorithmic computations that may
+          contain errors, simplifications, rounding, idealised assumptions,
+          or omissions of real-world variables (terrain, regulatory rules,
+          patient-specific factors, market conditions, etc.).
+        </p>
+        <div class="nc-disc-callout">
+          <strong>Outputs may be wrong.</strong> Causes include — but are
+          not limited to — bugs, outdated formulas, upstream library
+          changes, jurisdictional variation, and assumptions that don't
+          match your situation.
+        </div>
+      </section>
+
+      <section id="verification">
+        <h2>3. Expert verification is required</h2>
+        <p>
+          By using any tool on NumberCals.com you agree that you will
+          <strong>not</strong> rely on its output as the sole basis for
+          any decision, and that you will obtain independent verification
+          from a qualified expert before acting:
+        </p>
+
+        <div class="nc-disc-cards">
+
+          <article class="nc-disc-card nc-disc-eng">
+            <h3>⚙️ Engineering tools</h3>
+            <p class="nc-disc-examples">
+              Network design, structural, electrical, signal processing,
+              Fourier analysis, geospatial routing, etc.
+            </p>
+            <p>
+              Must be verified by a <strong>certified, licensed
+              professional engineer</strong> in the relevant discipline
+              before any field deployment, design submission, or
+              safety-critical use.
+            </p>
+          </article>
+
+          <article class="nc-disc-card nc-disc-med">
+            <h3>🩺 Medical calculators</h3>
+            <p class="nc-disc-examples">
+              Dosage, BMI, risk scores, clinical indices, etc.
+            </p>
+            <p>
+              Are <strong>not medical devices</strong> and
+              <strong>must not</strong> be used for diagnosis, prescription,
+              treatment, or any clinical decision. All values must be
+              reviewed by a <strong>licensed medical practitioner</strong>
+              before any patient care is delivered.
+            </p>
+          </article>
+
+          <article class="nc-disc-card nc-disc-fin">
+            <h3>💰 Financial &amp; tax calculators</h3>
+            <p class="nc-disc-examples">
+              Loans, mortgages, investment, retirement, tax, etc.
+            </p>
+            <p>
+              Do <strong>not</strong> constitute financial, tax, accounting,
+              or legal advice. Tax and regulatory rules vary by jurisdiction
+              and change frequently. A <strong>qualified financial advisor,
+              accountant, or tax professional</strong> must verify all
+              values before any financial commitment.
+            </p>
+          </article>
+
+          <article class="nc-disc-card nc-disc-gen">
+            <h3>🔧 All other tools</h3>
+            <p class="nc-disc-examples">
+              Any tool not in the categories above.
+            </p>
+            <p>
+              Must be verified by an <strong>appropriately qualified
+              subject-matter expert</strong> before any real-world use.
+            </p>
+          </article>
+
+        </div>
+      </section>
+
+      <section id="liability">
+        <h2>4. No liability</h2>
+        <div class="nc-disc-warn">
+          To the maximum extent permitted by law, the operators, developers,
+          and contributors of NumberCals.com accept
+          <strong>no liability whatsoever</strong> for any loss, damage,
+          injury, financial harm, regulatory non-compliance, business
+          interruption, or other consequence — whether direct, indirect,
+          incidental, consequential, special, or punitive — arising from
+          access to, use of, or reliance on this site or any of its tools.
+        </div>
+      </section>
+
+      <section id="responsibility">
+        <h2>5. Your responsibility</h2>
+        <p>
+          By using this site you accept <strong>full and sole
+          responsibility</strong> for independently verifying every output
+          before acting on it, for obtaining all necessary professional
+          advice, and for complying with all applicable laws and
+          regulations in your jurisdiction.
+        </p>
+      </section>
+
+      <section id="changes">
+        <h2>6. Changes</h2>
+        <p>
+          We may update calculators, tools, and this disclaimer at any
+          time without notice. Continued use of the site constitutes
+          acceptance of any changes.
+        </p>
+      </section>
+
+      <section id="contact">
+        <h2>7. Contact</h2>
+        <p>
+          Questions about this disclaimer or the site —
+          <a href="/contact">contact us</a>.
+        </p>
+      </section>
+
+      <p class="nc-disc-toplink"><a href="#">↑ Back to top</a></p>
+
+    </article>
+  </div>
+</div>
+
+<style>
+  .nc-disc-wrap {
+    max-width: 1100px;
+    margin: 1rem auto 2rem;
+    padding: 0 1rem;
+    color: #2c2c2c;
+    line-height: 1.65;
+  }
+
+  /* HEADER */
+  .nc-disc-header {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffe9c4 100%);
+    border-left: 6px solid #c0392b;
+    padding: 1.5rem 1.75rem;
+    border-radius: 8px;
+    margin-bottom: 1.75rem;
+  }
+  .nc-disc-badge {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+  .nc-disc-header h1 {
+    margin: 0 0 .35rem; font-size: 1.85rem; color: #1a1a1a;
+  }
+  .nc-disc-sub { margin: 0 0 .25rem; font-size: 1rem; color: #555; }
+  .nc-disc-meta { margin: 0; font-size: .82rem; color: #888; }
+
+  /* TWO-COLUMN LAYOUT */
+  .nc-disc-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  @media (max-width: 850px) {
+    .nc-disc-layout { grid-template-columns: 1fr; gap: 1rem; }
+    .nc-disc-toc    { position: static !important; }
+  }
+
+  /* TABLE OF CONTENTS */
+  .nc-disc-toc {
+    position: sticky;
+    top: 1rem;
+    background: #f7f7f7;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    font-size: .88rem;
+  }
+  .nc-disc-toc-title {
+    margin: 0 0 .5rem;
+    font-weight: 700;
+    color: #444;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .nc-disc-toc ol {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #666;
+  }
+  .nc-disc-toc li { margin-bottom: .35rem; }
+  .nc-disc-toc a { color: #0066cc; text-decoration: none; }
+  .nc-disc-toc a:hover { text-decoration: underline; }
+
+  /* BODY SECTIONS */
+  .nc-disc-body section {
+    padding-top: .5rem;
+    margin-bottom: 2rem;
+    scroll-margin-top: 1rem;
+  }
+  .nc-disc-body h2 {
+    color: #1a1a1a;
+    font-size: 1.3rem;
+    margin: 0 0 .6rem;
+    padding-bottom: .4rem;
+    border-bottom: 2px solid #f0e0d0;
+  }
+  .nc-disc-body p { margin: .5rem 0 .75rem; }
+
+  /* CALLOUT (yellow) */
+  .nc-disc-callout {
+    background: #fff8e1;
+    border-left: 4px solid #f0b400;
+    padding: .9rem 1.1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+  }
+
+  /* CALLOUT (red - liability) */
+  .nc-disc-warn {
+    background: #fdecea;
+    border-left: 4px solid #c0392b;
+    padding: 1rem 1.2rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  /* CATEGORY CARDS */
+  .nc-disc-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .nc-disc-card {
+    padding: 1.1rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    border-left-width: 5px;
+    background: #fff;
+  }
+  .nc-disc-card h3 {
+    margin: 0 0 .25rem;
+    font-size: 1rem;
+    color: #222;
+  }
+  .nc-disc-examples {
+    margin: 0 0 .65rem;
+    font-size: .82rem;
+    color: #777;
+    font-style: italic;
+  }
+  .nc-disc-card p:last-child { margin: 0; font-size: .9rem; }
+  .nc-disc-eng { border-left-color: #c0392b; background: #fff4f0; }
+  .nc-disc-med { border-left-color: #d63384; background: #fff0f6; }
+  .nc-disc-fin { border-left-color: #1565c0; background: #eef5fc; }
+  .nc-disc-gen { border-left-color: #6c757d; background: #f5f5f5; }
+
+  /* BACK TO TOP */
+  .nc-disc-toplink {
+    text-align: center;
+    margin: 2.5rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e5e5;
+  }
+  .nc-disc-toplink a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: .9rem;
+  }
+  .nc-disc-toplink a:hover { text-decoration: underline; }
+</style>
+{% endblock %}

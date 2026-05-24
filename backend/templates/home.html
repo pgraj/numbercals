@@ -22,6 +22,62 @@
   </div>
 </section>
 
+<!-- Interactive Tools -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+  <div class="flex items-baseline justify-between mb-4">
+    <h2 class="text-xl sm:text-2xl font-bold text-slate-900">🛠️ Interactive Tools</h2>
+    <span class="text-sm text-slate-500">Planning &amp; design tools beyond formula calculators</span>
+  </div>
+
+  <!-- Featured: Cable Network Planner -->
+  <a href="/tools/cable-network-planner" class="group block bg-white rounded-lg border-2 border-brand-500 p-5 hover:shadow-lg transition mb-3">
+    <div class="flex flex-col sm:flex-row gap-4 items-start">
+      <div class="text-4xl flex-shrink-0">📡</div>
+      <div class="flex-1">
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-700">Cable Network Planner</h3>
+          <span class="text-xs bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">For Cable TV Operators</span>
+        </div>
+        <p class="text-sm text-slate-700 mb-2">
+          Click a map to place a Headend and Consumer Nodes — the tool computes the optimal cable layout, places RF amplifiers, and produces a costed bill of materials.
+        </p>
+        <ul class="text-sm text-slate-600 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 mb-2">
+          <li>✓ Road-following routes (OSRM)</li>
+          <li>✓ Terrain-adjusted lengths</li>
+          <li>✓ RG-11 RF attenuation modelling</li>
+          <li>✓ Automatic amplifier placement</li>
+          <li>✓ Multi-currency bill of materials</li>
+          <li>✓ Slope-based labour estimates</li>
+        </ul>
+        <span class="text-sm font-semibold text-brand-700 group-hover:text-brand-900">Open Cable Network Planner →</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- Scientific & Standard calculators -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <a href="/tools/scientific-calculator" class="group block bg-white rounded-lg border border-slate-200 p-4 hover:border-brand-500 hover:shadow-sm transition">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl">🧮</div>
+        <div>
+          <div class="font-semibold text-slate-900 group-hover:text-brand-700">Scientific Calculator</div>
+          <div class="mt-1 text-sm text-slate-600">Trigonometry, logarithms, exponents, factorials. Memory functions and DEG/RAD modes.</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/tools/standard-calculator" class="group block bg-white rounded-lg border border-slate-200 p-4 hover:border-brand-500 hover:shadow-sm transition">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl">🔢</div>
+        <div>
+          <div class="font-semibold text-slate-900 group-hover:text-brand-700">Standard Calculator</div>
+          <div class="mt-1 text-sm text-slate-600">Clean, mobile-friendly calculator for everyday arithmetic.</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
 <!-- Grouped calculators -->
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
   {% for group in grouped %}
@@ -42,3 +98,4 @@
   {% endfor %}
 </div>
 {% endblock %}
+</document_content>}

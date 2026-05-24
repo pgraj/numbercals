@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.title }} | NumberCals{% endblock %}
+
+{% block content %}
+
+{# ============================================================ #}
+{# PROMINENT DISCLAIMER — top of page, hard to miss             #}
+{# ============================================================ #}
+<div class="cnp-bigwarn" role="alert">
+  <div class="cnp-bigwarn-icon">⚠️</div>
+  <div class="cnp-bigwarn-body">
+    <div class="cnp-bigwarn-title">
+      EXPERIMENTAL TOOL — Field engineer verification required
+    </div>
+    <p class="cnp-bigwarn-text">
+      This planner produces a <strong>first-pass design</strong> using OSRM road
+      routing, free terrain elevation data, and idealised RG-11 RF attenuation
+      values. It does <strong>NOT</strong> account for:
+    </p>
+    <ul class="cnp-bigwarn-list">
+      <li><strong>Underground utility rights-of-way</strong> — consult local authority records</li>
+      <li><strong>Local installation codes</strong> — vary by jurisdiction, may require permits</li>
+      <li><strong>Building obstructions</strong> — physical surveys required</li>
+      <li><strong>RF interference sources</strong> — needs site spectrum analysis</li>
+      <li><strong>Soil / trenching conditions</strong> — needs geotechnical survey</li>
+      <li><strong>Real-world supplier prices</strong> — cost estimates are order-of-magnitude only</li>
+    </ul>
+    <p class="cnp-bigwarn-text">
+      <strong>A certified, licensed engineer must validate every output</strong>
+      against field conditions before any deployment, design submission, or
+      financial commitment. <a href="/disclaimer" class="cnp-bigwarn-link">Read full disclaimer →</a>
+    </p>
+  </div>
+</div>
+
+{# ============================================================ #}
+{# Leaflet for the interactive map                              #}
+{# ============================================================ #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<h1 style="margin-bottom:.25rem">{{ meta.icon }} {{ meta.title }}</h1>
+<p style="color:#555;margin-top:0">{{ meta.description }}</p>
+
+<div id="cnp-area-banner" class="cnp-banner">
+  👉 Set your <strong>Service Area</strong> on the left, then click the map
+  (first click = Headend, next clicks = Consumers) or look up an address.
+</div>
+
+<div class="cnp-wrap">
+
+  {# ============== SIDEBAR ============== #}
+  <aside class="cnp-side">
+
+    <h3>⚙️ RF Design Parameters</h3>
+    <p class="cnp-info">RG-11 trunk @ 750 MHz · 6 dB/100m loss</p>
+    <label>Loss budget before amp (dB)
+      <input id="cnp-loss-budget" type="number" min="15" max="50"
+             step="1" value="30">
+    </label>
+    <label>Drop cable per home (m)
+      <input id="cnp-drop" type="number" min="5" max="200"
+             step="5" value="30">
+    </label>
+
+    <h3>💰 Costing Currency</h3>
+    <label>Currency for bill of materials
+      <select id="cnp-currency">
+        <option value="USD">USD — US Dollar ($)</option>
+        <option value="EUR">EUR — Euro (€)</option>
+        <option value="GBP">GBP — British Pound (£)</option>
+        <option value="INR">INR — Indian Rupee (₹)</option>
+        <option value="AUD">AUD — Australian Dollar (A$)</option>
+        <option value="CAD">CAD — Canadian Dollar (C$)</option>
+        <option value="AED">AED — UAE Dirham (د.إ)</option>
+        <option value="SAR">SAR — Saudi Riyal (﷼)</option>
+        <option value="SGD">SGD — Singapore Dollar (S$)</option>
+        <option value="ZAR">ZAR — South African Rand (R)</option>
+        <option value="BRL">BRL — Brazilian Real (R$)</option>
+        <option value="MXN">MXN — Mexican Peso (Mex$)</option>
+      </select>
+    </label>
+
+    <h3>🌐 Modelling</h3>
+    <label class="cnp-check">
+      <input type="checkbox" id="cnp-road" checked>
+      Follow roads (OSRM)
+    </label>
+    <label class="cnp-check">
+      <input type="checkbox" id="cnp-terrain" checked>
+      Adjust for terrain elevation
+    </label>
+    <p class="cnp-info">
+      OSRM &amp; Open-Elevation are free public services.
+      Falls back to straight-line / flat if unreachable.
+    </p>
+
+    <h3>🌍 Service Area</h3>
+    <label>Country *
+      <input id="cnp-country" placeholder="e.g. India">
+    </label>
+    <label>State / Region
+      <input id="cnp-region" placeholder="e.g. Telangana">
+    </label>
+    <label>City / Town *
+      <input id="cnp-city" placeholder="e.g. Hyderabad">
+    </label>
+    <label>Suburb / Village
+      <input id="cnp-suburb" placeholder="e.g. Banjara Hills">
+    </label>
+    <button id="cnp-set-area" class="cnp-btn">📍 Set Service Area</button>
+
+    <h3>📍 Add Node by Address</h3>
+    <label>Street address
+      <input id="cnp-addr" placeholder="e.g. Road No 12">
+    </label>
+    <label>Place as
+      <select id="cnp-role">
+        <option value="consumer">Consumer Node</option>
+        <option value="headend">Headend Station</option>
+      </select>
+    </label>
+    <button id="cnp-lookup" class="cnp-btn">🔍 Lookup &amp; Add</button>
+
+    <h3>⚡ Actions</h3>
+    <button id="cnp-calc" class="cnp-btn cnp-btn-primary">
+      Calculate Network
+    </button>
+    <button id="cnp-clear" class="cnp-btn cnp-btn-danger">🗑️ Clear All</button>
+  </aside>
+
+  {# ============== MAIN PANE ============== #}
+  <div class="cnp-main">
+    <div id="cnp-status"></div>
+    <div id="cnp-map" class="cnp-map"></div>
+
+    <div class="cnp-metrics">
+      <div class="cnp-metric">
+        <div class="label">Headend</div>
+        <div class="value" id="cnp-m-headend">—</div>
+      </div>
+      <div class="cnp-metric">
+        <div class="label">Consumers</div>
+        <div class="value" id="cnp-m-consumers">0</div>
+      </div>
+      <div class="cnp-metric">
+        <div class="label">Total Cable</div>
+        <div class="value" id="cnp-m-cable">—</div>
+      </div>
+      <div class="cnp-metric">
+        <div class="label">Amplifiers</div>
+        <div class="value" id="cnp-m-amps">—</div>
+      </div>
+      <div class="cnp-metric cnp-metric-money">
+        <div class="label">Materials</div>
+        <div class="value" id="cnp-m-materials">—</div>
+      </div>
+      <div class="cnp-metric cnp-metric-money">
+        <div class="label">Labour</div>
+        <div class="value" id="cnp-m-labour">—</div>
+      </div>
+      <div class="cnp-metric cnp-metric-grand">
+        <div class="label">Grand Total</div>
+        <div class="value" id="cnp-m-total">—</div>
+      </div>
+    </div>
+
+    <div id="cnp-data-quality" class="cnp-quality" style="display:none">
+      <strong>Data quality:</strong> <span id="cnp-quality-text"></span>
+    </div>
+
+    <h3>📋 Cable Segments — terrain &amp; routing</h3>
+    <div class="cnp-table-wrap">
+      <div id="cnp-segments"><p class="cnp-empty">No network calculated yet.</p></div>
+    </div>
+
+    <h3>⚡ Amplifier Placement — RF physics</h3>
+    <p class="cnp-info">
+      Amplifiers placed wherever cumulative RG-11 loss exceeds your budget,
+      not at fixed intervals.
+    </p>
+    <div class="cnp-table-wrap">
+      <div id="cnp-repeaters"><p class="cnp-empty">No network calculated yet.</p></div>
+    </div>
+
+    <h3>💰 Bill of Materials</h3>
+    <div class="cnp-table-wrap">
+      <div id="cnp-bom"><p class="cnp-empty">No network calculated yet.</p></div>
+    </div>
+
+    {# Footer disclaimer reminder — second visual reinforcement #}
+    <div class="cnp-bottomwarn">
+      ⚠️ <strong>Reminder:</strong> all values above are estimates.
+      Costs are order-of-magnitude only. Cable lengths do not account for
+      rights-of-way, underground utilities, building obstructions, or local
+      codes. A licensed engineer must validate before deployment.
+      <a href="/disclaimer">Read full disclaimer →</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ============================================================ */
+  /* DISCLAIMER BANNERS — top + bottom                           */
+  /* ============================================================ */
+  .cnp-bigwarn {
+    display: flex;
+    gap: 1rem;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe9e6 100%);
+    border: 2px solid #c0392b;
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    margin: 1rem 0 1.5rem;
+    box-shadow: 0 2px 6px rgba(192,57,43,.15);
+  }
+  .cnp-bigwarn-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+  .cnp-bigwarn-body { flex: 1; }
+  .cnp-bigwarn-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #8b1f15;
+    margin-bottom: .5rem;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+  }
+  .cnp-bigwarn-text { margin: .35rem 0; color: #4a1c14; line-height: 1.5; font-size: .92rem; }
+  .cnp-bigwarn-list { margin: .35rem 0 .35rem 1.2rem; font-size: .88rem; color: #5a241a; }
+  .cnp-bigwarn-list li { margin-bottom: .15rem; }
+  .cnp-bigwarn-link { color: #c0392b; font-weight: 700; }
+  .cnp-bottomwarn {
+    background: #fff5f5;
+    border-left: 4px solid #c0392b;
+    padding: .85rem 1.1rem;
+    margin: 1.5rem 0 1rem;
+    border-radius: 5px;
+    font-size: .9rem;
+    color: #5a241a;
+    line-height: 1.55;
+  }
+  .cnp-bottomwarn a { color: #c0392b; font-weight: 600; }
+
+  /* ============================================================ */
+  /* LAYOUT                                                       */
+  /* ============================================================ */
+  .cnp-wrap {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    margin: 1rem 0;
+  }
+  .cnp-side {
+    background: #f7f7f7;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: .9rem;
+  }
+  .cnp-side h3 { margin: 1rem 0 .5rem; font-size: .95rem; color: #333; }
+  .cnp-side h3:first-child { margin-top: 0; }
+  .cnp-side label {
+    display: block; font-size: .82rem;
+    margin-top: .55rem; color: #444;
+  }
+  .cnp-side input, .cnp-side select {
+    width: 100%; padding: .4rem; margin-top: .15rem;
+    border: 1px solid #ccc; border-radius: 4px;
+    font-size: .88rem; box-sizing: border-box;
+    font-family: inherit;
+  }
+  .cnp-check { display: flex !important; align-items: center; gap: .4rem; }
+  .cnp-check input { width: auto !important; margin-top: 0; }
+  .cnp-btn {
+    width: 100%; margin-top: .65rem; padding: .55rem;
+    border: 0; border-radius: 4px; cursor: pointer;
+    font-size: .9rem; background: #0066cc; color: #fff;
+    font-family: inherit;
+  }
+  .cnp-btn:hover { background: #0052a3; }
+  .cnp-btn-primary { background: #28a745; }
+  .cnp-btn-primary:hover { background: #1f8838; }
+  .cnp-btn-danger { background: #cc3333; }
+  .cnp-btn-danger:hover { background: #a82828; }
+  .cnp-info { font-size: .78rem; color: #666; margin: .25rem 0; line-height: 1.5; }
+  .cnp-map { height: 560px; border-radius: 8px; border: 1px solid #ddd; }
+  .cnp-banner {
+    padding: .75rem 1rem; margin: .5rem 0 1rem;
+    background: #fff3cd; border-left: 4px solid #ffc107;
+    border-radius: 4px; font-size: .9rem;
+  }
+  .cnp-banner.success { background: #d4edda; border-color: #28a745; }
+
+  /* ============================================================ */
+  /* METRICS                                                      */
+  /* ============================================================ */
+  .cnp-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: .65rem; margin: 1rem 0;
+  }
+  .cnp-metric {
+    background: #fff; padding: .75rem .85rem;
+    border: 1px solid #e5e5e5; border-radius: 8px;
+  }
+  .cnp-metric .label { font-size: .72rem; color: #666; text-transform: uppercase; letter-spacing: .03em; }
+  .cnp-metric .value {
+    font-size: 1.25rem; font-weight: 700; color: #0066cc; margin-top: .1rem;
+  }
+  .cnp-metric-money .value { color: #2c7c3f; }
+  .cnp-metric-grand {
+    grid-column: span 4;
+    background: linear-gradient(135deg, #e8f4ea 0%, #cdf0d7 100%);
+    border-color: #2c7c3f;
+  }
+  .cnp-metric-grand .value { font-size: 1.8rem; color: #1c5028; }
+
+  /* ============================================================ */
+  /* DATA QUALITY                                                 */
+  /* ============================================================ */
+  .cnp-quality {
+    background: #eef5fc; border-left: 4px solid #1565c0;
+    padding: .6rem .9rem; margin: .75rem 0; border-radius: 4px;
+    font-size: .85rem; color: #0d3d6e;
+  }
+
+  /* ============================================================ */
+  /* TABLES                                                       */
+  /* ============================================================ */
+  #cnp-status:not(:empty) {
+    padding: .6rem .85rem; margin: .5rem 0;
+    border-radius: 4px; font-size: .88rem;
+    background: #e9ecef; border-left: 4px solid #6c757d;
+  }
+  #cnp-status .ok    { background: #d4edda; border-left-color: #28a745; }
+  #cnp-status .err   { background: #f8d7da; border-left-color: #dc3545; }
+  .cnp-table-wrap { overflow-x: auto; }
+  table.cnp-table {
+    width: 100%; border-collapse: collapse;
+    margin: .5rem 0 1rem; font-size: .85rem;
+    min-width: 600px;
+  }
+  table.cnp-table th, table.cnp-table td {
+    padding: .5rem .6rem; border-bottom: 1px solid #eee;
+    text-align: left; white-space: nowrap;
+  }
+  table.cnp-table th {
+    background: #f0f0f0; font-weight: 600; font-size: .78rem;
+    color: #333; text-transform: uppercase; letter-spacing: .02em;
+  }
+  table.cnp-table tr:hover td { background: #fafafa; }
+  .cnp-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: .72rem; font-weight: 600; text-transform: uppercase;
+  }
+  .cnp-tag-easy        { background: #d4edda; color: #1c5028; }
+  .cnp-tag-moderate    { background: #fff3cd; color: #856404; }
+  .cnp-tag-difficult   { background: #ffe5d0; color: #8b3e15; }
+  .cnp-tag-specialised { background: #f8d7da; color: #8b1f15; }
+  .cnp-tag-osrm        { background: #e8eef6; color: #294270; }
+  .cnp-tag-haversine   { background: #f1f3f5; color: #555; }
+  .cnp-tag-yes         { background: #d4edda; color: #1c5028; }
+  .cnp-tag-no          { background: #f1f3f5; color: #555; }
+
+  .cnp-empty { color: #888; font-style: italic; font-size: .85rem; margin: .25rem 0; }
+  .cnp-icon { background: transparent; border: 0; text-align: center; font-size: 1.5rem; line-height: 1.5rem; }
+
+  @media (max-width: 850px) {
+    .cnp-wrap    { grid-template-columns: 1fr; }
+    .cnp-metrics { grid-template-columns: repeat(2, 1fr); }
+    .cnp-metric-grand { grid-column: span 2; }
+  }
+</style>
+
+<script>
+(function () {
+  const state = {
+    headend: null,
+    consumers: [],
+    labels: [],
+    serviceArea: { country: "", region: "", city: "", suburb: "" },
+    apiUrl: "/api/tools/{{ meta.slug }}/calculate",
+    currencySymbol: "$",
+  };
+
+  // ----- Map -----
+  const map = L.map("cnp-map").setView([40.7589, -73.9851], 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19,
+  }).addTo(map);
+  const markersLayer = L.layerGroup().addTo(map);
+  const networkLayer = L.layerGroup().addTo(map);
+
+  // ----- Helpers -----
+  function setStatus(msg, kind) {
+    const box = document.getElementById("cnp-status");
+    if (!msg) { box.innerHTML = ""; return; }
+    box.innerHTML = `<div class="${kind || ''}">${msg}</div>`;
+    if (kind === "ok") setTimeout(() => { box.innerHTML = ""; }, 3500);
+  }
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const p1 = lat1*Math.PI/180, p2 = lat2*Math.PI/180;
+    const dp = (lat2-lat1)*Math.PI/180, dl = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  function isDuplicate(lat, lon, pts) {
+    return pts.some(p => haversine(lat, lon, p[0], p[1]) < 2);
+  }
+  function makeIcon(emoji, size) {
+    return L.divIcon({
+      className: "cnp-icon", html: emoji,
+      iconSize: [size, size], iconAnchor: [size/2, size/2],
+    });
+  }
+  function redrawMarkers() {
+    markersLayer.clearLayers();
+    if (state.headend) {
+      L.marker(state.headend, { icon: makeIcon("🏢", 30) })
+        .bindPopup("🏢 <b>Headend Station</b>").addTo(markersLayer);
+    }
+    state.consumers.forEach((p, i) => {
+      L.marker(p, { icon: makeIcon("🏠", 26) })
+        .bindPopup(`🏠 <b>Consumer #${i+1}</b><br>${state.labels[i] || ""}`)
+        .addTo(markersLayer);
+    });
+    document.getElementById("cnp-m-headend").textContent = state.headend ? "✅" : "—";
+    document.getElementById("cnp-m-consumers").textContent = state.consumers.length;
+  }
+
+  // ----- Map click → add node -----
+  let lastClickKey = null;
+  map.on("click", e => {
+    const { lat, lng } = e.latlng;
+    const key = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+    if (key === lastClickKey) return;
+    lastClickKey = key;
+    if (!state.headend) {
+      state.headend = [lat, lng];
+      setStatus("Headend placed.", "ok");
+    } else {
+      const all = [state.headend].concat(state.consumers);
+      if (isDuplicate(lat, lng, all)) return;
+      state.consumers.push([lat, lng]);
+      state.labels.push(`Map click @ ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      setStatus("Consumer added.", "ok");
+    }
+    redrawMarkers();
+  });
+
+  // ----- Geocoder with country-code filter (India fix) -----
+  const COUNTRY_CODES = {
+    "india":"in","united states":"us","usa":"us","us":"us","america":"us",
+    "united kingdom":"gb","uk":"gb","britain":"gb","england":"gb",
+    "australia":"au","canada":"ca","united arab emirates":"ae","uae":"ae",
+    "saudi arabia":"sa","singapore":"sg","new zealand":"nz","ireland":"ie",
+    "south africa":"za","germany":"de","france":"fr","spain":"es","italy":"it",
+    "japan":"jp","china":"cn","pakistan":"pk","bangladesh":"bd",
+    "sri lanka":"lk","nepal":"np","indonesia":"id","malaysia":"my",
+    "philippines":"ph","thailand":"th","vietnam":"vn","brazil":"br","mexico":"mx",
+  };
+  async function geocode(query, countryName) {
+    let url = "https://nominatim.openstreetmap.org/search?q="
+            + encodeURIComponent(query) + "&format=json&limit=1&addressdetails=1";
+    if (countryName) {
+      const code = COUNTRY_CODES[countryName.trim().toLowerCase()];
+      if (code) url += "&countrycodes=" + code;
+    }
+    const resp = await fetch(url, { headers: { "Accept-Language": "en" } });
+    if (!resp.ok) throw new Error("Geocoder error " + resp.status);
+    const j = await resp.json();
+    if (!j.length) return null;
+    return { lat: parseFloat(j[0].lat), lon: parseFloat(j[0].lon), display: j[0].display_name };
+  }
+
+  // ----- Set Service Area -----
+  document.getElementById("cnp-set-area").addEventListener("click", async () => {
+    const sa = {
+      country: document.getElementById("cnp-country").value.trim(),
+      region:  document.getElementById("cnp-region").value.trim(),
+      city:    document.getElementById("cnp-city").value.trim(),
+      suburb:  document.getElementById("cnp-suburb").value.trim(),
+    };
+    const parts = [sa.suburb, sa.city, sa.region, sa.country].filter(Boolean);
+    if (!parts.length) { setStatus("Enter at least country and city.", "err"); return; }
+    setStatus("Locating service area…");
+    try {
+      const r = await geocode(parts.join(", "), sa.country);
+      if (!r) { setStatus("Service area not found.", "err"); return; }
+      state.serviceArea = sa;
+      map.setView([r.lat, r.lon], 14);
+      const b = document.getElementById("cnp-area-banner");
+      b.className = "cnp-banner success";
+      b.innerHTML = `🌍 <strong>Active Service Area:</strong> ${r.display}`;
+      setStatus("Service area set.", "ok");
+    } catch (e) { setStatus("Geocoder error: " + e.message, "err"); }
+  });
+
+  // ----- Add node by address -----
+  document.getElementById("cnp-lookup").addEventListener("click", async () => {
+    const addr = document.getElementById("cnp-addr").value.trim();
+    if (!addr) { setStatus("Enter a street address.", "err"); return; }
+    const role = document.getElementById("cnp-role").value;
+    const sa = state.serviceArea;
+    const ctx = [sa.suburb, sa.city, sa.region, sa.country]
+      .filter(p => p && !addr.toLowerCase().includes(p.toLowerCase()));
+    const query = ctx.length ? `${addr}, ${ctx.join(", ")}` : addr;
+    setStatus("Looking up: " + query);
+    try {
+      const r = await geocode(query, sa.country);
+      if (!r) { setStatus("Address not found.", "err"); return; }
+      if (role === "headend") {
+        state.headend = [r.lat, r.lon];
+        map.setView([r.lat, r.lon], 16);
+        setStatus("Headend placed: " + r.display, "ok");
+      } else {
+        if (state.headend && isDuplicate(r.lat, r.lon, [state.headend])) {
+          setStatus("That's already the headend.", "err"); return;
+        }
+        if (isDuplicate(r.lat, r.lon, state.consumers)) {
+          setStatus("Already a consumer.", "err"); return;
+        }
+        state.consumers.push([r.lat, r.lon]);
+        state.labels.push(r.display);
+        setStatus("Consumer added: " + r.display, "ok");
+      }
+      redrawMarkers();
+    } catch (e) { setStatus("Geocoder error: " + e.message, "err"); }
+  });
+
+  // ----- Calculate -----
+  document.getElementById("cnp-calc").addEventListener("click", async () => {
+    if (!state.headend || !state.consumers.length) {
+      setStatus("Place a headend and at least 1 consumer first.", "err"); return;
+    }
+    setStatus("Optimising network — fetching road routes &amp; terrain (may take 10–30s)…");
+    try {
+      const payload = {
+        headend:               state.headend,
+        consumers:             state.consumers,
+        loss_budget_db:        parseFloat(document.getElementById("cnp-loss-budget").value),
+        drop_cable_per_node_m: parseFloat(document.getElementById("cnp-drop").value),
+        currency:              document.getElementById("cnp-currency").value,
+        use_road_routing:      document.getElementById("cnp-road").checked,
+        use_terrain:           document.getElementById("cnp-terrain").checked,
+      };
+      const r = await fetch(state.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (!data.ok) { setStatus(data.error || "Calculation failed.", "err"); return; }
+      renderResults(data);
+      setStatus("Network optimised.", "ok");
+    } catch (e) { setStatus("Backend error: " + e.message, "err"); }
+  });
+
+  // ----- Render -----
+  function fmtMoney(v) { return state.currencySymbol + " " + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  function renderResults(data) {
+    networkLayer.clearLayers();
+    state.currencySymbol = data.metrics.currency_symbol;
+
+    // Cable lines (follow real geometry)
+    data.edges.forEach(e => {
+      L.polyline(e.geometry, { color: "#0a7d33", weight: 4, opacity: .85 })
+        .bindTooltip(`${e.from} ↔ ${e.to} • ${e.length_m} m`)
+        .addTo(networkLayer);
+    });
+
+    // Amplifiers
+    data.repeaters.forEach(rp => {
+      L.marker([rp.lat, rp.lon], { icon: makeIcon("⚡", 24) })
+        .bindPopup(
+          `⚡ <b>${rp.id}</b><br>Segment: ${rp.segment}<br>` +
+          `Distance: ${rp.distance_from_start_m} m<br>` +
+          `Cum. loss: ${rp.cumulative_loss_db} dB<br>` +
+          `Hardware: ${rp.suggested_hardware}`
+        ).addTo(networkLayer);
+    });
+
+    // Metrics
+    const m = data.metrics;
+    document.getElementById("cnp-m-cable").textContent =
+      m.total_cable_m < 1000 ? m.total_cable_m.toFixed(1) + " m"
+                             : m.total_cable_km.toFixed(2) + " km";
+    document.getElementById("cnp-m-amps").textContent = m.total_amplifiers;
+    document.getElementById("cnp-m-materials").textContent = fmtMoney(m.materials_subtotal);
+    document.getElementById("cnp-m-labour").textContent    = fmtMoney(m.labour_total);
+    document.getElementById("cnp-m-total").textContent     = fmtMoney(m.grand_total);
+
+    // Data quality banner
+    const dq = document.getElementById("cnp-data-quality");
+    const qt = document.getElementById("cnp-quality-text");
+    const totalEdges = data.segments.length;
+    qt.innerHTML =
+      `${m.osrm_routes_used}/${totalEdges} routes via OSRM (road-following), ` +
+      `${m.osrm_fallbacks} via Haversine fallback · ` +
+      `${m.terrain_sampled}/${totalEdges} segments with terrain elevation, ` +
+      `${m.terrain_fallbacks} assumed flat. ` +
+      `Design: RG-11 @ ${m.design_freq_mhz} MHz, ${m.cable_loss_db_100m} dB/100m.`;
+    dq.style.display = "block";
+
+    // Segment table
+    document.getElementById("cnp-segments").innerHTML = renderTable(
+      ["From","To","Straight (m)","Road (m)","Cable (m)","Route","Terrain","Grade %","Loss (dB)","Amps","Labour"],
+      data.segments.map(s => [
+        s.from, s.to, s.straight_m, s.road_m, s.cable_m,
+        `<span class="cnp-tag cnp-tag-${s.route_source}">${s.route_source === "osrm" ? "OSRM" : "Haversine"}</span>`,
+        `<span class="cnp-tag cnp-tag-${s.difficulty}">${s.difficulty}</span>` +
+          (s.terrain_sampled ? "" : ' <span class="cnp-tag cnp-tag-no">flat fallback</span>'),
+        s.max_grade_pct,
+        s.total_loss_db,
+        s.amplifiers,
+        fmtMoney(s.labour_cost),
+      ])
+    );
+
+    // Amplifier table
+    document.getElementById("cnp-repeaters").innerHTML =
+      data.repeaters.length
+        ? renderTable(
+            ["ID","Segment","Dist (m)","Cum. Loss (dB)","Lat","Lon","Hardware"],
+            data.repeaters.map(r => [
+              r.id, r.segment, r.distance_from_start_m,
+              r.cumulative_loss_db, r.lat, r.lon, r.suggested_hardware,
+            ])
+          )
+        : '<p class="cnp-empty">👍 No amplifiers required — segments stay within loss budget.</p>';
+
+    // Bill of materials
+    document.getElementById("cnp-bom").innerHTML = renderTable(
+      ["Component","Quantity","Unit Cost","Total Cost","Notes"],
+      data.bom.map(b => [
+        b.component, b.quantity,
+        b.unit_cost === "—" ? "—" : fmtMoney(b.unit_cost),
+        fmtMoney(b.total_cost),
+        b.notes,
+      ])
+    );
+  }
+
+  function renderTable(headers, rows) {
+    const h = headers.map(c => `<th>${c}</th>`).join("");
+    const r = rows.map(row =>
+      `<tr>${row.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+    return `<table class="cnp-table"><thead><tr>${h}</tr></thead><tbody>${r}</tbody></table>`;
+  }
+
+  // ----- Clear -----
+  document.getElementById("cnp-clear").addEventListener("click", () => {
+    state.headend = null;
+    state.consumers = [];
+    state.labels = [];
+    markersLayer.clearLayers();
+    networkLayer.clearLayers();
+    ["cnp-segments","cnp-repeaters","cnp-bom"].forEach(id => {
+      document.getElementById(id).innerHTML =
+        '<p class="cnp-empty">No network calculated yet.</p>';
+    });
+    ["cnp-m-headend","cnp-m-consumers","cnp-m-cable","cnp-m-amps",
+     "cnp-m-materials","cnp-m-labour","cnp-m-total"].forEach(id => {
+      document.getElementById(id).textContent = id === "cnp-m-consumers" ? "0" : "—";
+    });
+    document.getElementById("cnp-data-quality").style.display = "none";
+    setStatus("Cleared.", "ok");
+  });
+})();
+</script>
+
+{# ----- SEO indexable content ----- #}
+{% if meta is defined and meta %}
+  {% include "_tool_seo_content.html" %}
+{% endif %}
+
+{% endblock %}

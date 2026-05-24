@@ -1,175 +1,547 @@
 {% extends "base.html" %}
 
-{% block title %}Scientific Calculator — {{ branding.SITE_NAME }}{% endblock %}
-{% block description %}Free online scientific calculator with sin, cos, tan, log, ln, powers, roots, and parentheses. Mobile-friendly.{% endblock %}
+{% block title %}{{ meta.title if meta else "Scientific Calculator" }} | NumberCals{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto px-4 py-6 sm:py-10">
-  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
-    <a href="/" class="hover:text-brand-700">Home</a>
-    <span>/</span>
-    <span class="text-slate-700">Scientific Calculator</span>
-  </nav>
+<div class="sci-wrap">
 
-  <h1 class="text-2xl font-bold text-slate-900">Scientific Calculator</h1>
-  <p class="mt-1 text-sm text-slate-600">Trig, logs, powers, roots, parentheses. Toggle DEG/RAD as needed.</p>
+  <header class="sci-head">
+    <h1>🧮 Scientific Calculator</h1>
+    <p>Trigonometry, logarithms, exponents, factorials, and more. Works in your browser — no install, no signup.</p>
+  </header>
 
-  <section class="mt-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-    <!-- Display -->
-    <div class="px-4 py-4 bg-slate-900 text-white">
-      <div class="flex items-center justify-between text-xs text-slate-300">
-        <span>Expression</span>
-        <button id="angle-toggle" class="px-2 py-0.5 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold">DEG</button>
+  <div class="sci-card">
+
+    {# -------- DISPLAY -------- #}
+    <div class="sci-display" role="status" aria-live="polite">
+      <div class="sci-expr" id="sci-expr">&nbsp;</div>
+      <div class="sci-result" id="sci-result">0</div>
+    </div>
+
+    {# -------- MODE + MEMORY STRIP -------- #}
+    <div class="sci-modes">
+      <div class="sci-mode-toggle" role="group" aria-label="Angle mode">
+        <button class="sci-mode-btn sci-mode-active" data-mode="DEG" type="button">DEG</button>
+        <button class="sci-mode-btn"                  data-mode="RAD" type="button">RAD</button>
       </div>
-      <div id="expr" class="mt-1 text-right text-sm text-slate-200 min-h-[1.25rem] num break-words"></div>
-      <div id="disp" class="text-right text-2xl sm:text-3xl font-semibold num break-words">0</div>
+      <div class="sci-memory">
+        <button class="sci-mem" data-act="mem-add"    type="button" title="Add to memory">M+</button>
+        <button class="sci-mem" data-act="mem-sub"    type="button" title="Subtract from memory">M−</button>
+        <button class="sci-mem" data-act="mem-recall" type="button" title="Recall memory">MR</button>
+        <button class="sci-mem" data-act="mem-clear"  type="button" title="Clear memory">MC</button>
+        <span class="sci-mem-val">M: <b id="sci-mem">0</b></span>
+      </div>
     </div>
 
-    <!-- Keypad -->
-    <div class="p-3 grid grid-cols-5 gap-1.5 text-sm sm:text-base select-none">
-      <!-- Row 1: scientific -->
-      <button data-token="Math.sin("  class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">sin</button>
-      <button data-token="Math.cos("  class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">cos</button>
-      <button data-token="Math.tan("  class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">tan</button>
-      <button data-token="Math.log10(" class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">log</button>
-      <button data-token="Math.log("   class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">ln</button>
-      <!-- Row 2: powers & constants -->
-      <button data-token="Math.sqrt(" class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">√</button>
-      <button data-token="**2"        class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">x²</button>
-      <button data-token="**"         class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">xʸ</button>
-      <button data-token="Math.PI"    class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">π</button>
-      <button data-token="Math.E"     class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">e</button>
-      <!-- Row 3 -->
-      <button data-action="clear"     class="h-12 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold">AC</button>
-      <button data-action="back"      class="h-12 rounded-lg bg-slate-200 hover:bg-slate-300 font-semibold">⌫</button>
-      <button data-token="("          class="h-12 rounded-lg bg-slate-200 hover:bg-slate-300 font-semibold">(</button>
-      <button data-token=")"          class="h-12 rounded-lg bg-slate-200 hover:bg-slate-300 font-semibold">)</button>
-      <button data-token="/"          class="h-12 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">÷</button>
-      <!-- Row 4 -->
-      <button data-token="7"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">7</button>
-      <button data-token="8"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">8</button>
-      <button data-token="9"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">9</button>
-      <button data-token="*"          class="h-12 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">×</button>
-      <button data-token="%"          class="h-12 rounded-lg bg-slate-200 hover:bg-slate-300 font-semibold">mod</button>
-      <!-- Row 5 -->
-      <button data-token="4"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">4</button>
-      <button data-token="5"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">5</button>
-      <button data-token="6"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">6</button>
-      <button data-token="-"          class="h-12 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">−</button>
-      <button data-action="sign"      class="h-12 rounded-lg bg-slate-200 hover:bg-slate-300 font-semibold">±</button>
-      <!-- Row 6 -->
-      <button data-token="1"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">1</button>
-      <button data-token="2"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">2</button>
-      <button data-token="3"          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">3</button>
-      <button data-token="+"          class="h-12 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold">+</button>
-      <button data-action="equals"    class="h-12 row-span-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">=</button>
-      <!-- Row 7 -->
-      <button data-token="0"          class="col-span-2 h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">0</button>
-      <button data-token="."          class="h-12 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 font-semibold">.</button>
-      <button data-token="Math.exp("  class="h-12 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold">eˣ</button>
-    </div>
-  </section>
+    {# -------- BUTTON GRID -------- #}
+    <div class="sci-grid">
+      <button class="sci-btn sci-fn" data-fn="sin"  type="button">sin</button>
+      <button class="sci-btn sci-fn" data-fn="cos"  type="button">cos</button>
+      <button class="sci-btn sci-fn" data-fn="tan"  type="button">tan</button>
+      <button class="sci-btn sci-fn" data-fn="log"  type="button">log</button>
 
-  <p class="mt-4 text-xs text-slate-500">Tip: in DEG mode, trig inputs are interpreted as degrees. Toggle the badge above to switch to RAD.</p>
+      <button class="sci-btn sci-fn" data-fn="asin" type="button">sin⁻¹</button>
+      <button class="sci-btn sci-fn" data-fn="acos" type="button">cos⁻¹</button>
+      <button class="sci-btn sci-fn" data-fn="atan" type="button">tan⁻¹</button>
+      <button class="sci-btn sci-fn" data-fn="ln"   type="button">ln</button>
+
+      <button class="sci-btn sci-fn" data-op="sq"    type="button">x²</button>
+      <button class="sci-btn sci-fn" data-fn="sqrt"  type="button">√</button>
+      <button class="sci-btn sci-fn" data-op="pow"   type="button">xʸ</button>
+      <button class="sci-btn sci-fn" data-op="fact"  type="button">n!</button>
+
+      <button class="sci-btn sci-const" data-const="π" type="button">π</button>
+      <button class="sci-btn sci-const" data-const="e" type="button">e</button>
+      <button class="sci-btn sci-paren" data-char="("  type="button">(</button>
+      <button class="sci-btn sci-paren" data-char=")"  type="button">)</button>
+
+      <button class="sci-btn sci-clear" data-act="ac"   type="button">AC</button>
+      <button class="sci-btn sci-clear" data-act="ce"   type="button">CE</button>
+      <button class="sci-btn sci-clear" data-act="back" type="button">⌫</button>
+      <button class="sci-btn sci-op"    data-char="/"   type="button">÷</button>
+
+      <button class="sci-btn sci-num" data-char="7" type="button">7</button>
+      <button class="sci-btn sci-num" data-char="8" type="button">8</button>
+      <button class="sci-btn sci-num" data-char="9" type="button">9</button>
+      <button class="sci-btn sci-op"  data-char="*" type="button">×</button>
+
+      <button class="sci-btn sci-num" data-char="4" type="button">4</button>
+      <button class="sci-btn sci-num" data-char="5" type="button">5</button>
+      <button class="sci-btn sci-num" data-char="6" type="button">6</button>
+      <button class="sci-btn sci-op"  data-char="-" type="button">−</button>
+
+      <button class="sci-btn sci-num" data-char="1" type="button">1</button>
+      <button class="sci-btn sci-num" data-char="2" type="button">2</button>
+      <button class="sci-btn sci-num" data-char="3" type="button">3</button>
+      <button class="sci-btn sci-op"  data-char="+" type="button">+</button>
+
+      <button class="sci-btn sci-num" data-act="neg"  type="button">±</button>
+      <button class="sci-btn sci-num" data-char="0"   type="button">0</button>
+      <button class="sci-btn sci-num" data-char="."   type="button">.</button>
+      <button class="sci-btn sci-eq"  data-act="eq"   type="button">=</button>
+    </div>
+
+    <p class="sci-hint">Tip: use your keyboard — numbers, <kbd>+</kbd> <kbd>−</kbd> <kbd>×</kbd> <kbd>÷</kbd>, <kbd>Enter</kbd>, <kbd>Backspace</kbd>, <kbd>Esc</kbd> all work.</p>
+
+  </div>
+
 </div>
+
+<style>
+  .sci-wrap {
+    max-width: 560px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+
+  /* ----- Header ----- */
+  .sci-head { text-align: center; margin-bottom: 1.25rem; }
+  .sci-head h1 { margin: 0 0 .4rem; font-size: 1.9rem; }
+  .sci-head p  { color: #666; font-size: .92rem; margin: 0; line-height: 1.5; }
+
+  /* ----- Card container ----- */
+  .sci-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 1.35rem;
+    box-shadow: 0 2px 14px rgba(0,0,0,.06);
+  }
+
+  /* ----- Display ----- */
+  .sci-display {
+    background: linear-gradient(180deg, #f6f7f9, #eef0f3);
+    border: 1px solid #e0e2e6;
+    border-radius: 12px;
+    padding: 1rem 1.2rem 1.1rem;
+    text-align: right;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .sci-expr {
+    font-size: 1.05rem;
+    color: #777;
+    font-weight: 500;
+    line-height: 1.4;
+    min-height: 1.5em;
+    word-break: break-all;
+  }
+  .sci-result {
+    font-size: 2.85rem;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-top: .2rem;
+    word-break: break-all;
+  }
+
+  /* ----- Mode + Memory strip ----- */
+  .sci-modes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-bottom: 1rem;
+  }
+  .sci-mode-toggle {
+    display: inline-flex;
+    background: #eef0f3;
+    border-radius: 9px;
+    padding: 3px;
+  }
+  .sci-mode-btn {
+    border: 0;
+    background: transparent;
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .sci-mode-btn.sci-mode-active {
+    background: #fff;
+    color: #1565c0;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  }
+  .sci-memory {
+    display: flex;
+    gap: .35rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .sci-mem {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: .4rem .7rem;
+    border-radius: 7px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .sci-mem:hover { background: #f5f5f5; }
+  .sci-mem-val {
+    font-size: .82rem;
+    color: #888;
+    margin-left: .35rem;
+  }
+  .sci-mem-val b { color: #1565c0; font-weight: 700; }
+
+  /* ----- Button grid ----- */
+  .sci-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .6rem;
+  }
+  .sci-btn {
+    border: 0;
+    border-radius: 11px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    height: 62px;
+    transition: transform .07s, background-color .15s, box-shadow .15s, filter .15s;
+    font-family: inherit;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sci-btn:hover  { filter: brightness(0.96); }
+  .sci-btn:active { transform: scale(0.95); }
+
+  /* Number digits */
+  .sci-num {
+    background: #ffffff;
+    color: #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .sci-num:hover { background: #f4f4f6; }
+
+  /* Functions (sin, cos, log, etc.) */
+  .sci-fn {
+    background: #e8eef6;
+    color: #294270;
+    font-size: 1.05rem;
+  }
+  .sci-fn:hover { background: #dbe4f0; }
+
+  /* Operators (+, −, ×, ÷) */
+  .sci-op {
+    background: #1565c0;
+    color: #fff;
+    font-size: 1.55rem;
+  }
+  .sci-op:hover { background: #0d4a90; }
+
+  /* Constants (π, e) */
+  .sci-const {
+    background: #fff4d6;
+    color: #8a6510;
+    font-size: 1.4rem;
+    font-style: italic;
+  }
+  .sci-const:hover { background: #ffe9a8; }
+
+  /* Parentheses */
+  .sci-paren {
+    background: #f0f1f3;
+    color: #444;
+    font-size: 1.4rem;
+  }
+  .sci-paren:hover { background: #e3e5e8; }
+
+  /* Clear / backspace */
+  .sci-clear {
+    background: #fff5f5;
+    color: #c0392b;
+    border: 1px solid #f0c2bd;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .sci-clear:hover { background: #ffe9e6; }
+
+  /* Equals */
+  .sci-eq {
+    background: #28a745;
+    color: #fff;
+    font-size: 1.7rem;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(40,167,69,.3);
+  }
+  .sci-eq:hover { background: #1f8838; }
+
+  .sci-hint {
+    text-align: center;
+    color: #888;
+    font-size: .82rem;
+    margin: 1rem 0 0;
+  }
+  .sci-hint kbd {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: .78rem;
+    font-family: monospace;
+  }
+
+  /* ----- Error state ----- */
+  .sci-display.error .sci-result { color: #c0392b; }
+
+  /* ----- Mobile ----- */
+  @media (max-width: 480px) {
+    .sci-card     { padding: 1rem; border-radius: 12px; }
+    .sci-display  { padding: .85rem 1rem .95rem; min-height: 100px; }
+    .sci-result   { font-size: 2.3rem; }
+    .sci-expr     { font-size: .95rem; }
+    .sci-btn      { height: 54px; font-size: 1.15rem; border-radius: 10px; }
+    .sci-op       { font-size: 1.4rem; }
+    .sci-eq       { font-size: 1.5rem; }
+    .sci-const    { font-size: 1.25rem; }
+    .sci-paren    { font-size: 1.25rem; }
+    .sci-fn       { font-size: .95rem; }
+    .sci-grid     { gap: .5rem; }
+  }
+</style>
 
 <script>
 (function () {
-  const dispEl = document.getElementById('disp');
-  const exprEl = document.getElementById('expr');
-  const angleBtn = document.getElementById('angle-toggle');
+  // ----- DOM refs -----
+  const exprEl   = document.getElementById('sci-expr');
+  const resultEl = document.getElementById('sci-result');
+  const memEl    = document.getElementById('sci-mem');
+  const display  = document.querySelector('.sci-display');
 
-  let buffer = '';
-  let mode = 'DEG';
+  // ----- State -----
+  let buffer       = '';   // current expression text shown
+  let lastResult   = '0';
+  let memory       = 0;
+  let mode         = 'DEG';
+  let justComputed = false;
 
-  function pretty(s) {
-    return s
-      .replace(/Math\.sin\(/g, 'sin(')
-      .replace(/Math\.cos\(/g, 'cos(')
-      .replace(/Math\.tan\(/g, 'tan(')
-      .replace(/Math\.log10\(/g, 'log(')
-      .replace(/Math\.log\(/g, 'ln(')
-      .replace(/Math\.sqrt\(/g, '√(')
-      .replace(/Math\.exp\(/g, 'eˣ(')
-      .replace(/Math\.PI/g, 'π')
-      .replace(/Math\.E/g, 'e')
-      .replace(/\*\*2/g, '²')
-      .replace(/\*\*/g, '^')
-      .replace(/\*/g, '×')
-      .replace(/\//g, '÷')
-      .replace(/-/g, '−');
-  }
-  function render() {
-    exprEl.textContent = pretty(buffer);
-  }
-
-  function append(token) {
-    buffer += token;
-    render();
-  }
-  function clearAll() { buffer = ''; dispEl.textContent = '0'; render(); }
-  function backspace() {
-    // Strip a function name in one go if present at the end
-    const fns = ['Math.sin(','Math.cos(','Math.tan(','Math.log10(','Math.log(','Math.sqrt(','Math.exp(','Math.PI','Math.E','**2','**'];
-    for (const f of fns) {
-      if (buffer.endsWith(f)) { buffer = buffer.slice(0, -f.length); render(); return; }
+  // ----- Helpers -----
+  function fmt(n) {
+    if (n === Infinity || n === -Infinity) return '∞';
+    if (typeof n !== 'number' || isNaN(n)) return 'Error';
+    if (Math.abs(n) >= 1e15 || (n !== 0 && Math.abs(n) < 1e-9)) {
+      return n.toExponential(6);
     }
-    buffer = buffer.slice(0, -1);
-    render();
+    // Up to 12 significant digits, drop trailing zeros
+    return parseFloat(n.toPrecision(12)).toString();
   }
-  function toggleSign() {
-    // Wrap the last number in -(...)
-    const m = buffer.match(/(\d+(?:\.\d+)?)$/);
-    if (m) {
-      const start = buffer.length - m[1].length;
-      buffer = buffer.slice(0, start) + '(-' + m[1] + ')';
-      render();
+
+  function setError() {
+    display.classList.add('error');
+    resultEl.textContent = 'Error';
+  }
+  function clearError() { display.classList.remove('error'); }
+
+  function needsImplicitMultiply(prev, next) {
+    if (!prev || !next) return false;
+    const last = prev[prev.length - 1];
+    const first = next[0];
+    // digit / ) / constant followed by digit / function / ( / constant
+    return /[0-9)πe]/.test(last) && /[a-zA-Z(πe0-9.]/.test(first);
+  }
+
+  function append(s) {
+    if (justComputed && /^[0-9.]/.test(s)) {
+      buffer = '';
+      justComputed = false;
     }
-  }
-  function fmtResult(n) {
-    if (!isFinite(n)) return 'Error';
-    return Number(n.toFixed(12)).toString();
-  }
-
-  // Convert trig args from degrees to radians if in DEG mode.
-  function preprocess(src) {
-    if (mode === 'RAD') return src;
-    return src.replace(/Math\.(sin|cos|tan)\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g,
-      (m, fn, arg) => `Math.${fn}((${arg})*Math.PI/180)`);
+    if (needsImplicitMultiply(buffer, s)) buffer += '*';
+    buffer += s;
+    justComputed = false;
   }
 
-  function evaluate() {
-    if (!buffer) return;
+  // ----- Expression → JS transformer -----
+  function toJS(s) {
+    let js = s;
+    js = js.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+    js = js.replace(/π/g, '(Math.PI)');
+    js = js.replace(/(?<![a-zA-Z0-9_])e(?![a-zA-Z0-9_])/g, '(Math.E)');
+
+    const trigWrap = mode === 'DEG'
+      ? { sin: '(Math.PI/180)*', cos: '(Math.PI/180)*', tan: '(Math.PI/180)*' }
+      : { sin: '', cos: '', tan: '' };
+    const itrigWrap = mode === 'DEG' ? '(180/Math.PI)*' : '';
+
+    js = js.replace(/\bsin\(/g, 'Math.sin(' + trigWrap.sin);
+    js = js.replace(/\bcos\(/g, 'Math.cos(' + trigWrap.cos);
+    js = js.replace(/\btan\(/g, 'Math.tan(' + trigWrap.tan);
+    js = js.replace(/\basin\(/g, itrigWrap + 'Math.asin(');
+    js = js.replace(/\bacos\(/g, itrigWrap + 'Math.acos(');
+    js = js.replace(/\batan\(/g, itrigWrap + 'Math.atan(');
+    js = js.replace(/\bln\(/g, 'Math.log(');
+    js = js.replace(/\blog\(/g, 'Math.log10(');
+    js = js.replace(/\bsqrt\(/g, 'Math.sqrt(');
+    js = js.replace(/\^/g, '**');
+
+    // Auto-close unclosed parens for live preview
+    const opens = (js.match(/\(/g) || []).length;
+    const closes = (js.match(/\)/g) || []).length;
+    for (let i = closes; i < opens; i++) js += ')';
+    return js;
+  }
+
+  function safeEval(s) {
+    if (!s) return null;
     try {
-      const src = preprocess(buffer);
-      // Sanitised: only allow digits, operators, parens, dot, and Math identifiers
-      if (!/^[\d+\-*/%(). MathPIEsincoatlgqrxp,]*$/.test(src)) throw new Error('Invalid characters');
-      // eslint-disable-next-line no-new-func
-      const fn = new Function('return (' + src + ')');
-      const result = fn();
-      const s = fmtResult(Number(result));
-      dispEl.textContent = s;
-      buffer = s === 'Error' ? '' : s;
-      render();
+      const val = Function('"use strict"; return (' + toJS(s) + ')')();
+      return (typeof val === 'number') ? val : null;
     } catch (e) {
-      dispEl.textContent = 'Error';
+      return null;
     }
   }
 
-  document.querySelectorAll('button[data-token]').forEach(b =>
-    b.addEventListener('click', () => append(b.dataset.token))
-  );
-  document.querySelector('button[data-action="clear"]').addEventListener('click', clearAll);
-  document.querySelector('button[data-action="back"]').addEventListener('click', backspace);
-  document.querySelector('button[data-action="sign"]').addEventListener('click', toggleSign);
-  document.querySelector('button[data-action="equals"]').addEventListener('click', evaluate);
+  // ----- Display update (with live preview) -----
+  function render() {
+    clearError();
+    exprEl.textContent = buffer || '\u00A0';
+    const preview = safeEval(buffer);
+    if (preview !== null && isFinite(preview)) {
+      resultEl.textContent = fmt(preview);
+    } else if (!buffer) {
+      resultEl.textContent = '0';
+    }
+  }
 
-  angleBtn.addEventListener('click', () => {
-    mode = mode === 'DEG' ? 'RAD' : 'DEG';
-    angleBtn.textContent = mode;
+  // ----- Commit (=) -----
+  function compute() {
+    if (!buffer) return;
+    const val = safeEval(buffer);
+    if (val === null || !isFinite(val) || isNaN(val)) { setError(); return; }
+    exprEl.textContent = buffer + ' =';
+    resultEl.textContent = fmt(val);
+    lastResult = fmt(val);
+    buffer = lastResult;
+    justComputed = true;
+  }
+
+  // ----- Action handlers -----
+  function doOp(op) {
+    switch (op) {
+      case 'sq':
+        if (buffer) buffer += '^2';
+        break;
+      case 'pow':
+        if (buffer) buffer += '^';
+        break;
+      case 'fact': {
+        const v = safeEval(buffer);
+        if (v !== null && v >= 0 && Number.isInteger(v) && v <= 170) {
+          let f = 1; for (let i = 2; i <= v; i++) f *= i;
+          buffer = fmt(f);
+          justComputed = true;
+        } else {
+          setError(); return;
+        }
+        break;
+      }
+    }
+    render();
+  }
+
+  function doAct(act) {
+    switch (act) {
+      case 'ac':
+        buffer = ''; lastResult = '0';
+        exprEl.textContent = '\u00A0'; resultEl.textContent = '0';
+        clearError();
+        return;
+      case 'ce':
+        buffer = '';
+        exprEl.textContent = '\u00A0'; resultEl.textContent = lastResult;
+        clearError();
+        return;
+      case 'back':
+        buffer = buffer.slice(0, -1); render(); return;
+      case 'neg': {
+        const m = buffer.match(/(-?\d+\.?\d*)$/);
+        if (m) {
+          const num = m[0];
+          const flipped = num.startsWith('-') ? num.slice(1) : '-' + num;
+          buffer = buffer.slice(0, -num.length) + flipped;
+        }
+        render(); return;
+      }
+      case 'eq':
+        compute(); return;
+      case 'mem-add': {
+        const v = safeEval(buffer);
+        if (v !== null && !isNaN(v)) { memory += v; memEl.textContent = fmt(memory); }
+        return;
+      }
+      case 'mem-sub': {
+        const v = safeEval(buffer);
+        if (v !== null && !isNaN(v)) { memory -= v; memEl.textContent = fmt(memory); }
+        return;
+      }
+      case 'mem-recall':
+        append(fmt(memory)); render(); return;
+      case 'mem-clear':
+        memory = 0; memEl.textContent = '0'; return;
+    }
+  }
+
+  // ----- Wire buttons -----
+  document.querySelectorAll('.sci-grid .sci-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const d = btn.dataset;
+      if (d.char)       { append(d.char); render(); }
+      else if (d.fn)    { append(d.fn + '('); render(); }
+      else if (d.const) { append(d.const); render(); }
+      else if (d.op)    { doOp(d.op); }
+      else if (d.act)   { doAct(d.act); }
+    });
   });
 
+  document.querySelectorAll('.sci-mem').forEach(btn => {
+    btn.addEventListener('click', () => doAct(btn.dataset.act));
+  });
+
+  // ----- Mode toggle -----
+  document.querySelectorAll('.sci-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      document.querySelectorAll('.sci-mode-btn').forEach(b =>
+        b.classList.toggle('sci-mode-active', b.dataset.mode === mode));
+      render();
+    });
+  });
+
+  // ----- Keyboard support -----
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const k = e.key;
+    if (/^[0-9.]$/.test(k))        { append(k); render(); e.preventDefault(); }
+    else if (k === '+' || k === '-' || k === '*' || k === '/' || k === '(' || k === ')' || k === '^') {
+      append(k); render(); e.preventDefault();
+    }
+    else if (k === 'Enter' || k === '=') { compute(); e.preventDefault(); }
+    else if (k === 'Backspace')          { doAct('back'); e.preventDefault(); }
+    else if (k === 'Escape')             { doAct('ac');   e.preventDefault(); }
+  });
+
+  // Initial paint
   render();
 })();
 </script>
+
+{# ----- SEO indexable content below the calculator ----- #}
+{% if meta is defined and meta %}
+  {% include "_tool_seo_content.html" %}
+{% endif %}
+
 {% endblock %}

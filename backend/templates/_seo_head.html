@@ -1,0 +1,142 @@
+{# ===========================================================================
+   backend/templates/_seo_head.html
+   ---------------------------------------------------------------------------
+   Universal SEO <head> block. Include it ONCE from base.html so every page
+   gets meta description, Open Graph, Twitter Card, canonical URL, and
+   JSON-LD structured data.
+
+   How it picks values
+   -------------------
+   Each page passes a `seo` dict in its template context. If no `seo` is
+   passed, sensible site-wide defaults are used. Tool / calculator pages
+   build their `seo` dict automatically from each module's META in main.py.
+
+   `seo` keys (all optional):
+       title         — used in <title> and og:title
+       description   — meta description + og:description (155 chars ideal)
+       keywords      — comma-separated string (low SEO value, but harmless)
+       canonical     — absolute URL to canonical page
+       image         — absolute URL to share image (1200×630 recommended)
+       page_type     — "WebSite" | "SoftwareApplication" | "Article" | "FAQPage"
+       category      — Engineering / Medical / Financial / etc.
+       faqs          — list of {"q": ..., "a": ...} for FAQPage schema
+       breadcrumbs   — list of {"name": ..., "url": ...} for BreadcrumbList
+   =========================================================================== #}
+
+{% set site_name   = "NumberCals" %}
+{% set site_url    = "https://numbercals.com" %}
+{% set default_img = site_url ~ "/static/og-default.png" %}
+{% set default_desc = "Free calculators and engineering, scientific, medical, and financial tools for everyday and professional use. Educational and research-grade — independent expert verification required." %}
+
+{% set page_title       = seo.title       | default(site_name ~ " — free calculators &amp; engineering tools") %}
+{% set page_description = seo.description | default(default_desc) %}
+{% set page_canonical   = seo.canonical   | default(site_url ~ request.url.path) %}
+{% set page_image       = seo.image       | default(default_img) %}
+{% set page_type        = seo.page_type   | default("WebSite") %}
+
+<title>{{ page_title }}</title>
+<meta name="description" content="{{ page_description }}">
+{% if seo and seo.keywords %}<meta name="keywords" content="{{ seo.keywords }}">{% endif %}
+<link rel="canonical" href="{{ page_canonical }}">
+
+{# ---- Open Graph (Facebook, LinkedIn, WhatsApp, Slack previews) ---- #}
+<meta property="og:type"        content="website">
+<meta property="og:site_name"   content="{{ site_name }}">
+<meta property="og:title"       content="{{ page_title }}">
+<meta property="og:description" content="{{ page_description }}">
+<meta property="og:url"         content="{{ page_canonical }}">
+<meta property="og:image"       content="{{ page_image }}">
+
+{# ---- Twitter / X card ---- #}
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="{{ page_title }}">
+<meta name="twitter:description" content="{{ page_description }}">
+<meta name="twitter:image"       content="{{ page_image }}">
+
+{# ---- Mobile / crawler hints ---- #}
+<meta name="robots"   content="index, follow, max-image-preview:large">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0066cc">
+
+{# ---- JSON-LD: SoftwareApplication for tools, WebSite for everything else ---- #}
+{% if page_type == "SoftwareApplication" %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "{{ page_title | replace('"', '\\"') }}",
+  "description": "{{ page_description | replace('"', '\\"') }}",
+  "url": "{{ page_canonical }}",
+  "applicationCategory": "{{ seo.category | default('Engineering') }}Application",
+  "operatingSystem": "Any (web-based)",
+  "browserRequirements": "Requires modern browser with JavaScript enabled",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ site_name }}",
+    "url": "{{ site_url }}"
+  }
+}
+</script>
+{% else %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ site_name }}",
+  "url": "{{ site_url }}",
+  "description": "{{ default_desc | replace('"', '\\"') }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ site_url }}/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endif %}
+
+{# ---- BreadcrumbList for tool/calculator pages ---- #}
+{% if seo and seo.breadcrumbs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {% for bc in seo.breadcrumbs %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "name": "{{ bc.name }}",
+      "item": "{{ site_url }}{{ bc.url }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
+{# ---- FAQPage schema (huge for rich snippets) ---- #}
+{% if seo and seo.faqs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in seo.faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.q | replace('"', '\\"') }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.a | replace('"', '\\"') }}"
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}

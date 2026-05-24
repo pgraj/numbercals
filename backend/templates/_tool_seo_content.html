@@ -1,0 +1,78 @@
+{# ===========================================================================
+   backend/templates/_tool_seo_content.html
+   ---------------------------------------------------------------------------
+   Renders SEO-rich indexable content below every tool page:
+     - "How this tool works" (h2 + paragraphs)
+     - "Use cases" (h2 + bullet list)
+     - "FAQs" (h2 + Q/A pairs — pairs with FAQPage JSON-LD in _seo_head.html)
+
+   The map/canvas/widget itself is JavaScript and invisible to Google.
+   THIS block is what crawlers actually read. Write it well — these are
+   the words that will rank your tool on Google.
+
+   Each tool's META provides the content:
+       META["seo_content"] = {
+           "how_it_works": ["paragraph 1", "paragraph 2", ...],
+           "use_cases":    ["use case 1", "use case 2", ...],
+           "faqs":         [{"q": "...", "a": "..."}, ...],
+       }
+   =========================================================================== #}
+
+{% if meta.seo_content %}
+<section class="nc-tool-seo" aria-labelledby="how-it-works">
+
+  {% if meta.seo_content.how_it_works %}
+  <h2 id="how-it-works">How the {{ meta.title }} works</h2>
+  {% for para in meta.seo_content.how_it_works %}
+  <p>{{ para }}</p>
+  {% endfor %}
+  {% endif %}
+
+  {% if meta.seo_content.use_cases %}
+  <h2 id="use-cases">Who uses this tool</h2>
+  <ul>
+    {% for uc in meta.seo_content.use_cases %}
+    <li>{{ uc }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if meta.seo_content.faqs %}
+  <h2 id="faqs">Frequently asked questions</h2>
+  {% for faq in meta.seo_content.faqs %}
+  <article class="nc-faq" itemscope itemtype="https://schema.org/Question">
+    <h3 itemprop="name">{{ faq.q }}</h3>
+    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+      <p itemprop="text">{{ faq.a }}</p>
+    </div>
+  </article>
+  {% endfor %}
+  {% endif %}
+
+</section>
+{% endif %}
+
+<style>
+  .nc-tool-seo {
+    max-width: 800px;
+    margin: 2.5rem auto 1.5rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid #e5e5e5;
+    color: #333;
+    line-height: 1.65;
+  }
+  .nc-tool-seo h2 {
+    font-size: 1.3rem; color: #222;
+    margin: 1.75rem 0 .75rem;
+  }
+  .nc-tool-seo h2:first-of-type { margin-top: .5rem; }
+  .nc-tool-seo p { margin: .65rem 0; font-size: .95rem; }
+  .nc-tool-seo ul { padding-left: 1.4rem; margin: .5rem 0 1rem; }
+  .nc-tool-seo li { margin-bottom: .35rem; font-size: .95rem; }
+  .nc-faq { margin: 1rem 0; }
+  .nc-faq h3 {
+    font-size: 1rem; color: #0066cc;
+    margin: .85rem 0 .25rem;
+  }
+  .nc-faq p { margin: .25rem 0 .5rem; font-size: .92rem; }
+</style>

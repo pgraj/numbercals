@@ -1,0 +1,69 @@
+{# ===========================================================================
+   backend/templates/_tool_warning.html
+   ---------------------------------------------------------------------------
+   PER-TOOL warning banner shown at the top of every tool / calculator page.
+   Picks the right "verify with X" line based on `meta.disclaimer_class`.
+
+   Usage inside any tool template:
+       {% with meta=meta %}{% include "_tool_warning.html" %}{% endwith %}
+
+   Falls back to the generic message if `disclaimer_class` is not set.
+   =========================================================================== #}
+
+<div class="nc-tool-warning nc-warn-{{ meta.disclaimer_class or 'general' }}">
+  <div class="nc-warn-icon">⚠️</div>
+  <div class="nc-warn-body">
+    <strong>Experimental tool — results require expert verification.</strong>
+    {% if meta.disclaimer_class == "engineering" %}
+      Outputs are algorithmic approximations based on straight-line geometry
+      and idealised inputs. They do <strong>not</strong> account for terrain,
+      obstacles, attenuation variance, regulatory rights-of-way, or local
+      installation codes. <strong>A certified, licensed engineer must
+      verify all values before any field deployment or design
+      submission.</strong>
+    {% elif meta.disclaimer_class == "medical" %}
+      This calculator is <strong>not</strong> a medical device and must
+      <strong>not</strong> be used for diagnosis, prescription, treatment,
+      or any clinical decision. <strong>All values must be independently
+      verified by a licensed medical practitioner</strong> before any
+      patient care is delivered.
+    {% elif meta.disclaimer_class == "financial" %}
+      This tool does <strong>not</strong> constitute financial, tax, or
+      legal advice. Tax and regulatory rules vary by jurisdiction and
+      change frequently. <strong>A qualified financial advisor,
+      accountant, or tax professional must verify all values</strong>
+      before any financial commitment.
+    {% else %}
+      Outputs may contain errors due to algorithmic limitations or input
+      assumptions. <strong>An appropriately qualified subject-matter
+      expert must verify all values</strong> before any real-world use.
+    {% endif %}
+    <a href="/disclaimer">Read full disclaimer →</a>
+  </div>
+</div>
+
+<style>
+  .nc-tool-warning {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    margin: 0.75rem 0 1.25rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    border-left: 5px solid #c0392b;
+    background: #fff3e0;
+  }
+  .nc-warn-engineering { border-left-color: #c0392b; background: #fff3e0; }
+  .nc-warn-medical     { border-left-color: #d63384; background: #ffe6f0; }
+  .nc-warn-financial   { border-left-color: #1565c0; background: #e3f2fd; }
+  .nc-warn-general     { border-left-color: #6c757d; background: #f1f3f5; }
+  .nc-warn-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+  .nc-warn-body a {
+    color: #c0392b;
+    text-decoration: underline;
+    font-weight: 600;
+    margin-left: 0.25rem;
+  }
+</style>
