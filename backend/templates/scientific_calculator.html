@@ -347,12 +347,22 @@
   }
   function clearError() { display.classList.remove('error'); }
 
-  function needsImplicitMultiply(prev, next) {
+function needsImplicitMultiply(prev, next) {
     if (!prev || !next) return false;
-    const last = prev[prev.length - 1];
+    const last  = prev[prev.length - 1];
     const first = next[0];
-    // digit / ) / constant followed by digit / function / ( / constant
-    return /[0-9)πe]/.test(last) && /[a-zA-Z(πe0-9.]/.test(first);
+
+    const lastIsDigit        = /[0-9.]/.test(last);
+    const lastIsCloseOrConst = /[)πe]/.test(last);
+    const firstIsDigit       = /[0-9]/.test(first);
+    const firstIsOpenOrFunc  = /[a-zA-Z(πe]/.test(first);
+
+    // 5*sin(...), 5*(...), 5*π, 5*e
+    if (lastIsDigit && firstIsOpenOrFunc) return true;
+    // )*5, )*sin(, )*(, π*5, π*sin(, e*5
+    if (lastIsCloseOrConst && (firstIsDigit || firstIsOpenOrFunc)) return true;
+    // 4 then 5 = "45", 4 then "." = "4." → no multiply
+    return false;
   }
 
   function append(s) {

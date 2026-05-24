@@ -1,145 +1,450 @@
 {% extends "base.html" %}
 
-{% block title %}Standard Calculator — {{ branding.SITE_NAME }}{% endblock %}
-{% block description %}A simple, mobile-friendly online standard calculator. Add, subtract, multiply, divide. No sign-up.{% endblock %}
+{% block title %}Standard Calculator | NumberCals{% endblock %}
+{% block description %}Free online standard calculator. Add, subtract, multiply, divide, percentage, square root. No signup, works in any browser.{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto px-4 py-6 sm:py-10">
-  <nav class="text-sm text-slate-500 mb-3 flex flex-wrap gap-1">
-    <a href="/" class="hover:text-brand-700">Home</a>
-    <span>/</span>
-    <span class="text-slate-700">Standard Calculator</span>
-  </nav>
+<div class="std-wrap">
 
-  <h1 class="text-2xl font-bold text-slate-900">Standard Calculator</h1>
-  <p class="mt-1 text-sm text-slate-600">Basic arithmetic, instantly.</p>
+  <header class="std-head">
+    <h1>🔢 Standard Calculator</h1>
+    <p>Clean, fast calculator for everyday arithmetic. Works on phone, tablet, and desktop.</p>
+  </header>
 
-  <section class="mt-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-    <!-- Display -->
-    <div class="px-4 sm:px-5 py-5 bg-slate-900 text-white">
-      <div id="hist" class="text-right text-sm text-slate-400 min-h-[1.25rem] num truncate"></div>
-      <div id="disp" class="text-right text-3xl sm:text-4xl font-semibold num break-words" data-val="0">0</div>
+  <div class="std-card">
+
+    {# -------- DISPLAY -------- #}
+    <div class="std-display" id="std-display-box">
+      <div class="std-history" id="std-history">&nbsp;</div>
+      <div class="std-result" id="std-display">0</div>
     </div>
 
-    <!-- Keypad -->
-    <div class="p-3 sm:p-4 grid grid-cols-4 gap-2 text-base sm:text-lg select-none">
-      <!-- Row 1 -->
-      <button data-action="clear"    class="col-span-2 h-14 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold">AC</button>
-      <button data-action="back"     class="h-14 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold">⌫</button>
-      <button data-op="/"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">÷</button>
-      <!-- Row 2 -->
-      <button data-num="7"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">7</button>
-      <button data-num="8"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">8</button>
-      <button data-num="9"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">9</button>
-      <button data-op="*"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">×</button>
-      <!-- Row 3 -->
-      <button data-num="4"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">4</button>
-      <button data-num="5"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">5</button>
-      <button data-num="6"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">6</button>
-      <button data-op="-"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">−</button>
-      <!-- Row 4 -->
-      <button data-num="1"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">1</button>
-      <button data-num="2"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">2</button>
-      <button data-num="3"           class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">3</button>
-      <button data-op="+"            class="h-14 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold">+</button>
-      <!-- Row 5 -->
-      <button data-num="0"           class="col-span-2 h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">0</button>
-      <button data-action="dot"      class="h-14 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 font-semibold">.</button>
-      <button data-action="equals"   class="h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">=</button>
+    {# -------- MEMORY STRIP -------- #}
+    <div class="std-memory">
+      <button class="std-mem" data-act="mem-add"    type="button" title="Add to memory">M+</button>
+      <button class="std-mem" data-act="mem-sub"    type="button" title="Subtract from memory">M−</button>
+      <button class="std-mem" data-act="mem-recall" type="button" title="Recall memory">MR</button>
+      <button class="std-mem" data-act="mem-clear"  type="button" title="Clear memory">MC</button>
+      <span class="std-mem-val">M: <b id="std-mem">0</b></span>
     </div>
-  </section>
+
+    {# -------- BUTTON GRID -------- #}
+    <div class="std-grid">
+      <button class="std-btn std-clear" data-act="ac"   type="button">AC</button>
+      <button class="std-btn std-clear" data-act="ce"   type="button">CE</button>
+      <button class="std-btn std-fn"    data-act="sqrt" type="button">√</button>
+      <button class="std-btn std-op"    data-op="/"     type="button">÷</button>
+
+      <button class="std-btn std-num" data-digit="7" type="button">7</button>
+      <button class="std-btn std-num" data-digit="8" type="button">8</button>
+      <button class="std-btn std-num" data-digit="9" type="button">9</button>
+      <button class="std-btn std-op"  data-op="*"    type="button">×</button>
+
+      <button class="std-btn std-num" data-digit="4" type="button">4</button>
+      <button class="std-btn std-num" data-digit="5" type="button">5</button>
+      <button class="std-btn std-num" data-digit="6" type="button">6</button>
+      <button class="std-btn std-op"  data-op="-"    type="button">−</button>
+
+      <button class="std-btn std-num" data-digit="1" type="button">1</button>
+      <button class="std-btn std-num" data-digit="2" type="button">2</button>
+      <button class="std-btn std-num" data-digit="3" type="button">3</button>
+      <button class="std-btn std-op"  data-op="+"    type="button">+</button>
+
+      <button class="std-btn std-fn"  data-act="pct"   type="button">%</button>
+      <button class="std-btn std-num" data-digit="0"   type="button">0</button>
+      <button class="std-btn std-num" data-act="dot"   type="button">.</button>
+      <button class="std-btn std-eq"  data-act="eq"    type="button">=</button>
+
+      <button class="std-btn std-fn"  data-act="neg"  type="button" style="grid-column: 1 / span 2;">± Negate</button>
+      <button class="std-btn std-fn"  data-act="back" type="button" style="grid-column: 3 / span 2;">⌫ Backspace</button>
+    </div>
+
+    <p class="std-hint">Tip: keyboard works — numbers, <kbd>+</kbd> <kbd>−</kbd> <kbd>×</kbd> <kbd>÷</kbd>, <kbd>Enter</kbd>, <kbd>Backspace</kbd>, <kbd>Esc</kbd>.</p>
+
+  </div>
+
+  {# -------- DISCLAIMER (mandatory per Code 666) -------- #}
+  <div class="std-disclaimer">
+    ⚠️ <strong>Educational use only.</strong> Outputs are algorithmic results.
+    For any safety-critical, financial, medical, or engineering decision,
+    independent verification by a qualified professional is required.
+    <a href="/disclaimer">Read full disclaimer →</a>
+  </div>
+
 </div>
+
+<style>
+  .std-wrap { max-width: 480px; margin: 1.5rem auto; padding: 0 1rem; }
+  .std-head { text-align: center; margin-bottom: 1.25rem; }
+  .std-head h1 { margin: 0 0 .4rem; font-size: 1.9rem; }
+  .std-head p  { color: #666; font-size: .92rem; margin: 0; line-height: 1.5; }
+
+  .std-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 1.35rem;
+    box-shadow: 0 2px 14px rgba(0,0,0,.06);
+  }
+
+  /* Display */
+  .std-display {
+    background: linear-gradient(180deg, #f6f7f9, #eef0f3);
+    border: 1px solid #e0e2e6;
+    border-radius: 12px;
+    padding: 1rem 1.2rem 1.1rem;
+    text-align: right;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+  .std-history {
+    font-size: 1.05rem;
+    color: #777;
+    font-weight: 500;
+    line-height: 1.4;
+    min-height: 1.5em;
+  }
+  .std-result {
+    font-size: 2.85rem;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    word-break: break-all;
+  }
+  .std-display.error .std-result { color: #c0392b; }
+
+  /* Memory strip */
+  .std-memory {
+    display: flex;
+    gap: .35rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .std-mem {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: .4rem .7rem;
+    border-radius: 7px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    font-family: inherit;
+  }
+  .std-mem:hover { background: #f5f5f5; }
+  .std-mem-val { font-size: .82rem; color: #888; margin-left: .35rem; }
+  .std-mem-val b { color: #1565c0; font-weight: 700; }
+
+  /* Button grid */
+  .std-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .6rem;
+  }
+  .std-btn {
+    border: 0;
+    border-radius: 11px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    height: 62px;
+    transition: transform .07s, background-color .15s, filter .15s;
+    font-family: inherit;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .std-btn:hover  { filter: brightness(0.96); }
+  .std-btn:active { transform: scale(0.95); }
+
+  .std-num {
+    background: #ffffff;
+    color: #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .std-num:hover { background: #f4f4f6; }
+
+  .std-op {
+    background: #1565c0;
+    color: #fff;
+    font-size: 1.55rem;
+  }
+  .std-op:hover { background: #0d4a90; }
+
+  .std-fn {
+    background: #e8eef6;
+    color: #294270;
+    font-size: 1.05rem;
+  }
+  .std-fn:hover { background: #dbe4f0; }
+
+  .std-clear {
+    background: #fff5f5;
+    color: #c0392b;
+    border: 1px solid #f0c2bd;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .std-clear:hover { background: #ffe9e6; }
+
+  .std-eq {
+    background: #28a745;
+    color: #fff;
+    font-size: 1.7rem;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(40,167,69,.3);
+  }
+  .std-eq:hover { background: #1f8838; }
+
+  .std-hint {
+    text-align: center; color: #888; font-size: .82rem; margin: 1rem 0 0;
+  }
+  .std-hint kbd {
+    background: #f0f0f0; border: 1px solid #ddd; border-radius: 3px;
+    padding: 1px 5px; font-size: .78rem; font-family: monospace;
+  }
+
+  /* Disclaimer */
+  .std-disclaimer {
+    background: #fff5f5;
+    border-left: 4px solid #c0392b;
+    padding: .85rem 1.1rem;
+    margin: 1.5rem 0 1rem;
+    border-radius: 5px;
+    font-size: .88rem;
+    color: #5a241a;
+    line-height: 1.55;
+  }
+  .std-disclaimer a { color: #c0392b; font-weight: 600; }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    .std-card { padding: 1rem; border-radius: 12px; }
+    .std-display { padding: .85rem 1rem .95rem; min-height: 100px; }
+    .std-result { font-size: 2.3rem; }
+    .std-history { font-size: .95rem; }
+    .std-btn { height: 54px; font-size: 1.25rem; border-radius: 10px; }
+    .std-op { font-size: 1.4rem; }
+    .std-eq { font-size: 1.5rem; }
+    .std-fn { font-size: .9rem; }
+    .std-grid { gap: .5rem; }
+  }
+</style>
 
 <script>
 (function () {
-  const disp = document.getElementById('disp');
-  const hist = document.getElementById('hist');
+  // ----- State -----
+  const state = {
+    current:   "0",      // displayed number string
+    previous:  null,     // stashed number string (before operator)
+    op:        null,     // pending operator: + - * /
+    resetNext: false,    // if true, next digit replaces current
+    memory:    0,
+    history:   "",
+  };
 
-  let current = '0';     // displayed value
-  let stored = null;     // operand on the left
-  let pending = null;    // pending op
-  let justEvaluated = false;
+  // ----- DOM refs -----
+  const displayBox = document.getElementById("std-display-box");
+  const displayEl  = document.getElementById("std-display");
+  const historyEl  = document.getElementById("std-history");
+  const memEl      = document.getElementById("std-mem");
 
+  // ----- Helpers -----
   function fmt(n) {
-    if (!isFinite(n)) return 'Error';
-    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 12 });
-  }
-  function render() { disp.textContent = current; }
-  function setCurrentFromNumber(n) { current = String(+n.toFixed(12)).replace(/\.?0+$/, ''); }
-
-  function inputDigit(d) {
-    if (justEvaluated) { current = '0'; justEvaluated = false; }
-    if (current === '0') current = d;
-    else current += d;
-    render();
-  }
-  function inputDot() {
-    if (justEvaluated) { current = '0'; justEvaluated = false; }
-    if (!current.includes('.')) { current += '.'; render(); }
-  }
-  function clearAll() { current = '0'; stored = null; pending = null; hist.textContent = ''; justEvaluated = false; render(); }
-  function backspace() {
-    if (justEvaluated) return;
-    current = current.length > 1 ? current.slice(0, -1) : '0';
-    render();
-  }
-  function applyOp(a, b, op) {
-    a = parseFloat(a); b = parseFloat(b);
-    if (op === '+') return a + b;
-    if (op === '-') return a - b;
-    if (op === '*') return a * b;
-    if (op === '/') return b === 0 ? NaN : a / b;
-    return b;
-  }
-  function setOp(op) {
-    if (stored === null) {
-      stored = parseFloat(current);
-    } else if (pending && !justEvaluated) {
-      const res = applyOp(stored, current, pending);
-      stored = res;
-      setCurrentFromNumber(res);
+    if (n === null || isNaN(n) || !isFinite(n)) return "Error";
+    if (Math.abs(n) >= 1e15 || (n !== 0 && Math.abs(n) < 1e-9)) {
+      return n.toExponential(6);
     }
-    pending = op;
-    const sym = {'+':'+','-':'−','*':'×','/':'÷'}[op];
-    hist.textContent = `${fmt(stored)} ${sym}`;
-    justEvaluated = false;
-    current = current === '' ? '0' : current;
-    render();
-    // After op, next digit should replace current
-    justEvaluated = true;
+    // toPrecision(12) handles floating point drift; parseFloat trims trailing 0s
+    return parseFloat(n.toPrecision(12)).toString();
   }
+
+  function opSym(o) {
+    return { "+": "+", "-": "−", "*": "×", "/": "÷" }[o] || o;
+  }
+
+  function compute(a, b, op) {
+    switch (op) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b === 0 ? null : a / b;
+    }
+    return null;
+  }
+
+  function setError() {
+    displayBox.classList.add("error");
+    displayEl.textContent = "Error";
+    state.current   = "0";
+    state.previous  = null;
+    state.op        = null;
+    state.resetNext = true;
+  }
+
+  function clearError() { displayBox.classList.remove("error"); }
+
+  function render() {
+    clearError();
+    historyEl.textContent = state.history || "\u00A0";
+    displayEl.textContent = state.current;
+  }
+
+  // ----- Input handlers -----
+  function inputDigit(d) {
+    if (state.resetNext) {
+      state.current   = d;
+      state.resetNext = false;
+    } else {
+      state.current = (state.current === "0") ? d : state.current + d;
+    }
+    render();
+  }
+
+  function inputDot() {
+    if (state.resetNext) {
+      state.current   = "0.";
+      state.resetNext = false;
+    } else if (!state.current.includes(".")) {
+      state.current += ".";
+    }
+    render();
+  }
+
+  function backspace() {
+    if (state.resetNext) return;
+    state.current = state.current.length > 1
+      ? state.current.slice(0, -1)
+      : "0";
+    if (state.current === "-") state.current = "0";
+    render();
+  }
+
+  function inputOp(op) {
+    if (state.op !== null && !state.resetNext) {
+      // Chain: compute previous result, continue with new operator
+      const a = parseFloat(state.previous);
+      const b = parseFloat(state.current);
+      const r = compute(a, b, state.op);
+      if (r === null) { setError(); return; }
+      state.current  = fmt(r);
+      state.previous = state.current;
+    } else {
+      state.previous = state.current;
+    }
+    state.op        = op;
+    state.resetNext = true;
+    state.history   = state.previous + " " + opSym(op);
+    render();
+  }
+
   function equals() {
-    if (pending === null || stored === null) return;
-    const res = applyOp(stored, current, pending);
-    hist.textContent = `${fmt(stored)} ${ {'+':'+','-':'−','*':'×','/':'÷'}[pending] } ${fmt(parseFloat(current))} =`;
-    setCurrentFromNumber(res);
-    stored = null;
-    pending = null;
-    justEvaluated = true;
+    if (state.op === null || state.previous === null) return;
+    const a = parseFloat(state.previous);
+    const b = parseFloat(state.current);
+    const r = compute(a, b, state.op);
+    if (r === null) { setError(); return; }
+    state.history   = state.previous + " " + opSym(state.op) + " " + state.current + " =";
+    state.current   = fmt(r);
+    state.previous  = null;
+    state.op        = null;
+    state.resetNext = true;
     render();
   }
 
-  document.querySelectorAll('button[data-num]').forEach(b =>
-    b.addEventListener('click', () => inputDigit(b.dataset.num))
-  );
-  document.querySelectorAll('button[data-op]').forEach(b =>
-    b.addEventListener('click', () => setOp(b.dataset.op))
-  );
-  document.querySelector('button[data-action="dot"]').addEventListener('click', inputDot);
-  document.querySelector('button[data-action="clear"]').addEventListener('click', clearAll);
-  document.querySelector('button[data-action="back"]').addEventListener('click', backspace);
-  document.querySelector('button[data-action="equals"]').addEventListener('click', equals);
+  function ac() {
+    state.current   = "0";
+    state.previous  = null;
+    state.op        = null;
+    state.resetNext = false;
+    state.history   = "";
+    clearError();
+    render();
+  }
 
-  // Keyboard
-  window.addEventListener('keydown', (e) => {
-    if (e.key >= '0' && e.key <= '9') inputDigit(e.key);
-    else if (e.key === '.') inputDot();
-    else if (['+','-','*','/'].includes(e.key)) setOp(e.key);
-    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); equals(); }
-    else if (e.key === 'Backspace') backspace();
-    else if (e.key === 'Escape') clearAll();
+  function ce() {
+    state.current   = "0";
+    state.resetNext = false;
+    clearError();
+    render();
+  }
+
+  function neg() {
+    if (state.current === "0" || state.current === "Error") return;
+    state.current = state.current.startsWith("-")
+      ? state.current.slice(1)
+      : "-" + state.current;
+    render();
+  }
+
+  function percent() {
+    const v = parseFloat(state.current);
+    if (isNaN(v)) { setError(); return; }
+    state.current = fmt(v / 100);
+    render();
+  }
+
+  function sqrt() {
+    const v = parseFloat(state.current);
+    if (isNaN(v) || v < 0) { setError(); return; }
+    state.current   = fmt(Math.sqrt(v));
+    state.resetNext = true;
+    render();
+  }
+
+  // ----- Memory -----
+  function memAdd()    { const v = parseFloat(state.current); if (!isNaN(v)) { state.memory += v; memEl.textContent = fmt(state.memory); } }
+  function memSub()    { const v = parseFloat(state.current); if (!isNaN(v)) { state.memory -= v; memEl.textContent = fmt(state.memory); } }
+  function memRecall() { state.current = fmt(state.memory); state.resetNext = true; render(); }
+  function memClear()  { state.memory = 0; memEl.textContent = "0"; }
+
+  // ----- Wire buttons -----
+  document.querySelectorAll(".std-grid .std-btn, .std-mem").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = btn.dataset;
+      if (d.digit !== undefined) {
+        inputDigit(d.digit);
+      } else if (d.op !== undefined) {
+        inputOp(d.op);
+      } else if (d.act !== undefined) {
+        switch (d.act) {
+          case "eq":         equals();    break;
+          case "ac":         ac();        break;
+          case "ce":         ce();        break;
+          case "back":       backspace(); break;
+          case "neg":        neg();       break;
+          case "pct":        percent();   break;
+          case "sqrt":       sqrt();      break;
+          case "dot":        inputDot();  break;
+          case "mem-add":    memAdd();    break;
+          case "mem-sub":    memSub();    break;
+          case "mem-recall": memRecall(); break;
+          case "mem-clear":  memClear();  break;
+        }
+      }
+    });
   });
 
+  // ----- Keyboard -----
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    const k = e.key;
+    if (/^[0-9]$/.test(k))          { inputDigit(k); e.preventDefault(); }
+    else if (k === ".")             { inputDot();    e.preventDefault(); }
+    else if ("+-*/".includes(k))    { inputOp(k);    e.preventDefault(); }
+    else if (k === "Enter" || k === "=") { equals();    e.preventDefault(); }
+    else if (k === "Backspace")    { backspace(); e.preventDefault(); }
+    else if (k === "Escape")       { ac();        e.preventDefault(); }
+    else if (k === "%")            { percent();   e.preventDefault(); }
+  });
+
+  // Initial paint
   render();
 })();
 </script>
